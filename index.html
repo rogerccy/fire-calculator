@@ -381,7 +381,7 @@
     <div class="chart-wrap">
       <div class="chart-header"><div class="chart-title">Portfolio Growth (Accumulation)</div></div>
       <svg id="chart-svg" class="chart-svg" viewBox="0 0 800 220" xmlns="http://www.w3.org/2000/svg">
-        <text x="400" y="110" text-anchor="middle" fill="#333" font-size="13">Enter your numbers to see the projection</text>
+        <text x="400" y="110" text-anchor="middle" fill="#888" font-size="13">Enter your numbers to see the projection</text>
       </svg>
     </div>
 
@@ -837,8 +837,8 @@
   function drawAccumChart(pts, fireNumber, ytf) {
     const maxV=Math.max(fireNumber*1.18,pts[pts.length-1].v*1.05,1),maxT=pts[pts.length-1].t;
     const xS=t=>PL+(t/maxT)*IW,yS=v=>PT+IH-(v/maxV)*IH;
-    let gl='',yl='';for(let i=0;i<=4;i++){const v=maxV*i/4,y=yS(v);gl+=`<line x1="${PL}" y1="${y}" x2="${PL+IW}" y2="${y}" stroke="#1a1a1a" stroke-width="1"/>`;yl+=`<text x="${PL-8}" y="${y+4}" text-anchor="end" fill="#333" font-size="10">${fmtMoney(v)}</text>`;}
-    let xl='';const step=maxT<=20?5:maxT<=40?10:15;for(let t=0;t<=maxT;t+=step)xl+=`<text x="${xS(t)}" y="${PT+IH+18}" text-anchor="middle" fill="#333" font-size="10">yr ${t}</text>`;
+    let gl='',yl='';for(let i=0;i<=4;i++){const v=maxV*i/4,y=yS(v);gl+=`<line x1="${PL}" y1="${y}" x2="${PL+IW}" y2="${y}" stroke="#1a1a1a" stroke-width="1"/>`;yl+=`<text x="${PL-8}" y="${y+4}" text-anchor="end" fill="#888" font-size="10">${fmtMoney(v)}</text>`;}
+    let xl='';const step=maxT<=20?5:maxT<=40?10:15;for(let t=0;t<=maxT;t+=step)xl+=`<text x="${xS(t)}" y="${PT+IH+18}" text-anchor="middle" fill="#888" font-size="10">yr ${t}</text>`;
     const fy=yS(fireNumber);
     const fl=`<line x1="${PL}" y1="${fy}" x2="${PL+IW}" y2="${fy}" stroke="#c8a96e" stroke-width="1" stroke-dasharray="5 4" opacity="0.6"/><text x="${PL+IW-4}" y="${fy-6}" text-anchor="end" fill="#c8a96e" font-size="10" opacity="0.8">FIRE target</text>`;
     const lp=pts.map(p=>`${xS(p.t)},${yS(p.v)}`).join(' ');
@@ -855,8 +855,8 @@
     const av=[...br,...sr].flatMap(r=>[r.portfolioStart,r.portfolioEnd||0]);
     const maxV=Math.max(sp*1.15,...av,1),maxT=Math.max(br[br.length-1].year,sr[sr.length-1].year);
     const xS=t=>DPL+(t/maxT)*DIW,yS=v=>DPT+DIH-(Math.max(0,v)/maxV)*DIH;
-    let gl='',yl='';for(let i=0;i<=4;i++){const v=maxV*i/4,y=yS(v);gl+=`<line x1="${DPL}" y1="${y}" x2="${DPL+DIW}" y2="${y}" stroke="#1a1a1a" stroke-width="1"/>`;yl+=`<text x="${DPL-8}" y="${y+4}" text-anchor="end" fill="#333" font-size="10">${fmtMoney(v)}</text>`;}
-    let xl='';const step=maxT<=20?5:maxT<=40?10:15;for(let t=0;t<=maxT;t+=step)xl+=`<text x="${xS(t)}" y="${DPT+DIH+18}" text-anchor="middle" fill="#333" font-size="10">yr ${t}</text>`;
+    let gl='',yl='';for(let i=0;i<=4;i++){const v=maxV*i/4,y=yS(v);gl+=`<line x1="${DPL}" y1="${y}" x2="${DPL+DIW}" y2="${y}" stroke="#1a1a1a" stroke-width="1"/>`;yl+=`<text x="${DPL-8}" y="${y+4}" text-anchor="end" fill="#888" font-size="10">${fmtMoney(v)}</text>`;}
+    let xl='';const step=maxT<=20?5:maxT<=40?10:15;for(let t=0;t<=maxT;t+=step)xl+=`<text x="${xS(t)}" y="${DPT+DIH+18}" text-anchor="middle" fill="#888" font-size="10">yr ${t}</text>`;
     const bl=br.map(r=>`${xS(r.year)},${yS(r.portfolioEnd??r.portfolioStart)}`).join(' ');
     const sl=sr.map(r=>`${xS(r.year)},${yS(r.portfolioEnd??r.portfolioStart)}`).join(' ');
     let ed='';sr.forEach(r=>{if(r.event==='cut'||r.event==='raise'){const col=r.event==='cut'?'#c07070':'#70a870';ed+=`<circle cx="${xS(r.year)}" cy="${yS(r.portfolioEnd)}" r="4" fill="${col}" opacity="0.85"/>"`;}});
@@ -869,11 +869,11 @@
     const av=[...dwzPts,...r4Pts].map(p=>p.v);
     const maxV=Math.max(sp*1.15,...av,1),N=deathAge-Math.round(fireAge);
     const xS=t=>ZPL+(t/N)*ZIW,yS=v=>ZPT+ZIH-(Math.max(0,v)/maxV)*ZIH;
-    let gl='',yl='';for(let i=0;i<=4;i++){const v=maxV*i/4,y=yS(v);gl+=`<line x1="${ZPL}" y1="${y}" x2="${ZPL+ZIW}" y2="${y}" stroke="#1a1a1a" stroke-width="1"/>`;yl+=`<text x="${ZPL-8}" y="${y+4}" text-anchor="end" fill="#333" font-size="10">${fmtMoney(v)}</text>`;}
-    let xl='';const step=N<=20?5:N<=40?10:15;for(let t=0;t<=N;t+=step){const age=Math.round(fireAge)+t;xl+=`<text x="${xS(t)}" y="${ZPT+ZIH+18}" text-anchor="middle" fill="#333" font-size="10">age ${age}</text>`;}
+    let gl='',yl='';for(let i=0;i<=4;i++){const v=maxV*i/4,y=yS(v);gl+=`<line x1="${ZPL}" y1="${y}" x2="${ZPL+ZIW}" y2="${y}" stroke="#1a1a1a" stroke-width="1"/>`;yl+=`<text x="${ZPL-8}" y="${y+4}" text-anchor="end" fill="#888" font-size="10">${fmtMoney(v)}</text>`;}
+    let xl='';const step=N<=20?5:N<=40?10:15;for(let t=0;t<=N;t+=step){const age=Math.round(fireAge)+t;xl+=`<text x="${xS(t)}" y="${ZPT+ZIH+18}" text-anchor="middle" fill="#888" font-size="10">age ${age}</text>`;}
     const r4p=r4Pts.map(p=>`${xS(p.t)},${yS(p.v)}`).join(' ');
     const lr4=r4Pts[r4Pts.length-1];
-    const r4lbl=lr4.v>0?`<text x="${xS(lr4.t)-6}" y="${yS(lr4.v)-8}" text-anchor="end" fill="#444" font-size="9">${fmtMoney(lr4.v)} unspent</text>`:'';
+    const r4lbl=lr4.v>0?`<text x="${xS(lr4.t)-6}" y="${yS(lr4.v)-8}" text-anchor="end" fill="#888" font-size="9">${fmtMoney(lr4.v)} unspent</text>`:'';
     const dp=dwzPts.map(p=>`${xS(p.t)},${yS(p.v)}`).join(' ');
     const da=`M${xS(0)},${ZPT+ZIH} L${xS(0)},${yS(dwzPts[0].v)} `+dwzPts.slice(1).map(p=>`L${xS(p.t)},${yS(p.v)}`).join(' ')+` L${xS(dwzPts[dwzPts.length-1].t)},${ZPT+ZIH} Z`;
     let ms='';for(let t=10;t<N;t+=10){const i=dwzPts.findIndex(p=>p.t>=t);if(i>=0){const p=dwzPts[i];ms+=`<circle cx="${xS(p.t)}" cy="${yS(p.v)}" r="3" fill="#1a1a1a" stroke="#c8a96e" stroke-width="1.5"/>`;}}
@@ -890,7 +890,7 @@
     }).join('');
   }
 
-  function drawChartEmpty(id) { $(id).innerHTML=`<text x="400" y="110" text-anchor="middle" fill="#333" font-size="13" font-family="sans-serif">Adjust your numbers to see a projection</text>`; }
+  function drawChartEmpty(id) { $(id).innerHTML=`<text x="400" y="110" text-anchor="middle" fill="#888" font-size="13" font-family="sans-serif">Adjust your numbers to see a projection</text>`; }
 
   // ── Gist ──
   function ghFetch(p,path,o={}){return fetch(API+path,{...o,headers:{'Authorization':`token ${p}`,'Content-Type':'application/json',...(o.headers||{})}});}
