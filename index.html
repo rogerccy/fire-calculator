@@ -27,7 +27,35 @@
     .subtitle { color: var(--muted); font-size: 0.82rem; text-align: center; line-height: 1.7; }
 
     .form-group { width: 100%; display: flex; flex-direction: column; gap: 7px; }
+
+    /* Label row — label + optional ? button */
+    .label-row { display: flex; align-items: center; gap: 6px; }
     .form-label { font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; }
+
+    /* Tooltip trigger button */
+    .tip-btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 13px; height: 13px; border-radius: 50%;
+      border: 1px solid var(--muted2); color: var(--muted2);
+      font-size: 8px; line-height: 1; cursor: pointer; background: none;
+      flex-shrink: 0; transition: border-color 0.15s, color 0.15s;
+      font-family: inherit;
+    }
+    .tip-btn:hover { border-color: var(--muted); color: var(--text); }
+
+    /* Floating tooltip */
+    #tooltip {
+      position: fixed; z-index: 300;
+      background: #1c1c1c; border: 1px solid #3a3a3a;
+      border-radius: 5px; padding: 12px 14px;
+      max-width: 256px; width: max-content;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+      pointer-events: none; opacity: 0;
+      transition: opacity 0.12s;
+    }
+    #tooltip.visible { opacity: 1; pointer-events: auto; }
+    .tip-title { font-size: 0.62rem; font-weight: 600; color: var(--text); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 7px; }
+    .tip-body  { font-size: 0.76rem; color: #999; line-height: 1.65; }
 
     input[type="password"],
     input[type="number"] {
@@ -38,31 +66,18 @@
     input:focus { border-color: #555; }
     input[type="range"] { width: 100%; accent-color: var(--accent); cursor: pointer; }
 
-    .btn {
-      background: var(--text); color: var(--bg); border: none;
-      padding: 11px 24px; font-size: 0.82rem; font-weight: 600;
-      letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer;
-      border-radius: 4px; transition: background 0.15s; width: 100%;
-    }
+    .btn { background: var(--text); color: var(--bg); border: none; padding: 11px 24px; font-size: 0.82rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; border-radius: 4px; transition: background 0.15s; width: 100%; }
     .btn:hover { background: #fff; }
     .btn:disabled { opacity: 0.4; cursor: default; }
 
-    .btn-ghost {
-      background: transparent; color: var(--muted); border: 1px solid var(--border2);
-      padding: 10px 24px; font-size: 0.78rem; font-weight: 500;
-      letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer;
-      border-radius: 4px; width: 100%; transition: color 0.15s, border-color 0.15s;
-    }
+    .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border2); padding: 10px 24px; font-size: 0.78rem; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; border-radius: 4px; width: 100%; transition: color 0.15s, border-color 0.15s; }
     .btn-ghost:hover { color: #aaa; border-color: #444; }
 
     .err-msg { color: #c05050; font-size: 0.78rem; text-align: center; min-height: 1em; }
     a { color: var(--muted); font-size: 0.78rem; } a:hover { color: #999; }
 
     /* ── Auth ── */
-    .center-screen {
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      gap: 18px; min-height: 100vh; max-width: 420px; margin: 0 auto; padding: 40px 24px;
-    }
+    .center-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; min-height: 100vh; max-width: 420px; margin: 0 auto; padding: 40px 24px; }
 
     /* ── Main ── */
     .main-wrap { max-width: 960px; margin: 0 auto; padding: 28px 20px 60px; }
@@ -92,29 +107,30 @@
     .slider-row { display: flex; align-items: center; gap: 10px; }
     .slider-val { font-size: 0.9rem; font-weight: 300; min-width: 46px; text-align: right; font-variant-numeric: tabular-nums; }
 
-    /* Mode toggle — 3 buttons */
+    /* Mode toggle */
     .mode-toggle { display: flex; border: 1px solid var(--border2); border-radius: 4px; overflow: hidden; }
-    .mode-btn {
-      background: none; color: var(--muted); border: none;
-      padding: 8px 0; font-size: 0.65rem; font-weight: 500;
-      letter-spacing: 0.04em; text-transform: uppercase;
-      cursor: pointer; flex: 1; transition: background 0.15s, color 0.15s;
-      border-right: 1px solid var(--border2);
-    }
+    .mode-btn { background: none; color: var(--muted); border: none; padding: 8px 0; font-size: 0.65rem; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; cursor: pointer; flex: 1; transition: background 0.15s, color 0.15s; border-right: 1px solid var(--border2); }
     .mode-btn:last-child { border-right: none; }
     .mode-btn:hover { color: #aaa; }
     .mode-btn.active { background: var(--border2); color: var(--text); }
 
-    .section-divider {
-      font-size: 0.6rem; color: var(--muted2); text-transform: uppercase;
-      letter-spacing: 0.12em; margin: 4px 0 12px;
-      display: flex; align-items: center; gap: 8px;
-    }
+    .section-divider { font-size: 0.6rem; color: var(--muted2); text-transform: uppercase; letter-spacing: 0.12em; margin: 4px 0 12px; display: flex; align-items: center; gap: 8px; }
     .section-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    /* Mode explainer */
+    .mode-explainer {
+      background: #0f0f0f; border: 1px solid var(--border);
+      border-left: 2px solid var(--accent);
+      border-radius: 0 4px 4px 0;
+      padding: 10px 14px; font-size: 0.77rem;
+      color: var(--muted); line-height: 1.65; margin-bottom: 20px;
+    }
+    .mode-explainer strong { color: #999; font-weight: 500; }
 
     /* Results */
     .result-main { font-size: 2.6rem; font-weight: 200; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; margin-bottom: 4px; line-height: 1; }
-    .result-sub { font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 20px; }
+    .result-sub-row { display: flex; align-items: center; gap: 6px; margin-bottom: 20px; }
+    .result-sub { font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; }
 
     .metrics { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
     .metric-row { display: flex; justify-content: space-between; align-items: baseline; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
@@ -140,14 +156,12 @@
     .banner.success { background: #0e1f0e; border: 1px solid #2a4a2a; color: #7abf7a; }
     .banner.warning { background: #1f0e0e; border: 1px solid #4a2a2a; color: #bf7a7a; }
 
-    /* Guardrails summary cards */
     .g-summary { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
     .g-card { background: #0f0f0f; border: 1px solid var(--border); border-radius: 4px; padding: 12px; }
     .g-card-title { font-size: 0.6rem; color: var(--muted2); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; }
     .g-card-row { display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--muted); margin-bottom: 4px; }
     .g-card-row span:last-child { color: var(--text); font-variant-numeric: tabular-nums; }
 
-    /* DWZ retirement result highlight */
     .dwz-spend-block { margin-top: 16px; padding: 16px; background: #0f0f0f; border: 1px solid var(--border2); border-radius: 4px; }
     .dwz-spend-label { font-size: 0.62rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px; }
     .dwz-spend-val { font-size: 2rem; font-weight: 200; color: var(--accent); font-variant-numeric: tabular-nums; }
@@ -166,12 +180,10 @@
     .chart-legend { display: flex; gap: 16px; }
     .leg-item { display: flex; align-items: center; gap: 6px; font-size: 0.68rem; color: var(--muted); }
     .leg-line { width: 14px; height: 2px; border-radius: 1px; display: inline-block; }
-    .leg-line.base   { background: #e8e8e8; }
+    .leg-line.base { background: #e8e8e8; }
     .leg-line.stress { background: var(--accent); }
-    .leg-line.dwz    { background: var(--accent); }
-    .leg-line.rule4  { background: #444; }
+    .leg-line.dwz { background: var(--accent); }
 
-    /* Withdrawal table */
     .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 5px; padding: 22px 16px 16px; margin-bottom: 20px; }
     .table-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; padding: 0 6px; }
 
@@ -195,6 +207,12 @@
   </style>
 </head>
 <body>
+
+<!-- Floating tooltip -->
+<div id="tooltip">
+  <div class="tip-title" id="tip-title"></div>
+  <div class="tip-body"  id="tip-body"></div>
+</div>
 
 <!-- ── AUTH ── -->
 <div id="s-auth" class="center-screen">
@@ -253,7 +271,10 @@
           </div>
         </div>
         <div class="input-row">
-          <label class="form-label">Expected Annual Return (real)</label>
+          <div class="label-row">
+            <label class="form-label">Expected Annual Return</label>
+            <button class="tip-btn" data-tip="ret">?</button>
+          </div>
           <div class="slider-row">
             <input type="range" id="i-return" min="1" max="12" step="0.5" value="7">
             <span class="slider-val" id="v-return">7%</span>
@@ -273,7 +294,10 @@
         <!-- Fixed SWR -->
         <div id="fixed-inputs">
           <div class="input-row" style="margin-bottom:0">
-            <label class="form-label">Safe Withdrawal Rate</label>
+            <div class="label-row">
+              <label class="form-label">Safe Withdrawal Rate</label>
+              <button class="tip-btn" data-tip="swr">?</button>
+            </div>
             <div class="slider-row">
               <input type="range" id="i-swr" min="2" max="6" step="0.25" value="4">
               <span class="slider-val" id="v-swr">4%</span>
@@ -285,28 +309,40 @@
         <div id="guardrails-inputs" class="hidden">
           <div class="section-divider">Guardrails Settings</div>
           <div class="input-row">
-            <label class="form-label">Initial Withdrawal Rate</label>
+            <div class="label-row">
+              <label class="form-label">Initial Withdrawal Rate</label>
+              <button class="tip-btn" data-tip="iwr">?</button>
+            </div>
             <div class="slider-row">
               <input type="range" id="i-iwr" min="3" max="7" step="0.25" value="5">
               <span class="slider-val" id="v-iwr">5%</span>
             </div>
           </div>
           <div class="input-row">
-            <label class="form-label">Upper Guardrail (triggers 10% cut)</label>
+            <div class="label-row">
+              <label class="form-label">Upper Guardrail</label>
+              <button class="tip-btn" data-tip="upper">?</button>
+            </div>
             <div class="slider-row">
               <input type="range" id="i-upper" min="10" max="40" step="5" value="20">
               <span class="slider-val" id="v-upper">+20%</span>
             </div>
           </div>
           <div class="input-row">
-            <label class="form-label">Lower Guardrail (triggers 10% raise)</label>
+            <div class="label-row">
+              <label class="form-label">Lower Guardrail</label>
+              <button class="tip-btn" data-tip="lower">?</button>
+            </div>
             <div class="slider-row">
               <input type="range" id="i-lower" min="10" max="40" step="5" value="20">
               <span class="slider-val" id="v-lower">-20%</span>
             </div>
           </div>
           <div class="input-row" style="margin-bottom:0">
-            <label class="form-label">Retirement Horizon</label>
+            <div class="label-row">
+              <label class="form-label">Retirement Horizon</label>
+              <button class="tip-btn" data-tip="horizon">?</button>
+            </div>
             <div class="slider-row">
               <input type="range" id="i-horizon" min="15" max="50" step="5" value="30">
               <span class="slider-val" id="v-horizon">30 yrs</span>
@@ -318,7 +354,10 @@
         <div id="dwz-inputs" class="hidden">
           <div class="section-divider">Die With Zero</div>
           <div class="input-row" style="margin-bottom:0">
-            <label class="form-label">Expected Death Age</label>
+            <div class="label-row">
+              <label class="form-label">Expected Death Age</label>
+              <button class="tip-btn" data-tip="death">?</button>
+            </div>
             <div class="slider-row">
               <input type="range" id="i-death" min="50" max="120" step="1" value="85">
               <span class="slider-val" id="v-death">85</span>
@@ -335,17 +374,15 @@
 
     </div>
 
-    <!-- Accumulation chart (all modes) -->
+    <!-- Accumulation chart -->
     <div class="chart-wrap">
-      <div class="chart-header">
-        <div class="chart-title">Portfolio Growth (Accumulation)</div>
-      </div>
+      <div class="chart-header"><div class="chart-title">Portfolio Growth (Accumulation)</div></div>
       <svg id="chart-svg" class="chart-svg" viewBox="0 0 800 220" xmlns="http://www.w3.org/2000/svg">
         <text x="400" y="110" text-anchor="middle" fill="#333" font-size="13">Enter your numbers to see the projection</text>
       </svg>
     </div>
 
-    <!-- Decumulation chart (Guardrails mode) -->
+    <!-- Decumulation chart (Guardrails) -->
     <div class="chart-wrap hidden" id="decu-chart-wrap">
       <div class="chart-header">
         <div class="chart-title">Retirement Simulation (Decumulation)</div>
@@ -357,7 +394,7 @@
       <svg id="decu-svg" class="chart-svg" viewBox="0 0 800 200" xmlns="http://www.w3.org/2000/svg"></svg>
     </div>
 
-    <!-- Withdrawal table (Guardrails mode) -->
+    <!-- Withdrawal table (Guardrails) -->
     <div class="table-wrap hidden" id="table-wrap">
       <div class="table-header">
         <div class="chart-title">Withdrawal Schedule</div>
@@ -374,7 +411,7 @@
       </div>
     </div>
 
-    <!-- Spend-down chart (Die With Zero mode) -->
+    <!-- Spend-down chart (Die With Zero) -->
     <div class="chart-wrap hidden" id="dwz-chart-wrap">
       <div class="chart-header">
         <div class="chart-title">Spend-Down to Zero</div>
@@ -400,10 +437,107 @@
   const GF  = 'fire-settings.json';
 
   const S = { pat: null, gistId: null, local: false };
-  let saveTimer  = null;
-  let MODE       = 'fixed';
-  let tableScen  = 'stress';
+  let saveTimer = null, MODE = 'fixed', tableScen = 'stress';
   let lastBaseRows = [], lastStressRows = [];
+
+  // ── Tooltip content ──
+  const TIPS = {
+    ret: {
+      title: 'Expected Annual Return (Real)',
+      body:  '"Real" means after subtracting inflation (~3%). The stock market returns ~10% nominally, so ~7% in real terms. Using real returns keeps everything in today\'s dollars — no need to model inflation separately.'
+    },
+    swr: {
+      title: 'Safe Withdrawal Rate',
+      body:  'The % of your portfolio you withdraw each year in retirement. The 4% rule (Trinity Study, 1994) survived every 30-year historical window including the Great Depression. A $1M portfolio at 4% = $40K/year, theoretically forever.'
+    },
+    firenumber: {
+      title: 'FIRE Number',
+      body:  'The portfolio size where you can stop working. Calculated as annual expenses ÷ SWR. At 4% that\'s expenses × 25. Once you hit it, investment returns cover your spending without depleting the principal.'
+    },
+    iwr: {
+      title: 'Initial Withdrawal Rate',
+      body:  'Your starting withdrawal rate — typically 5%, higher than the fixed 4% rule. The extra room is possible because you agree to cut spending in bad markets. This flexibility also means a smaller FIRE number to reach.'
+    },
+    upper: {
+      title: 'Upper Guardrail',
+      body:  'If your portfolio drops and your current withdrawal rate rises above this threshold, cut spending by 10%. Example: start at 5%, upper guardrail +20% → triggers at 6%. Protects the portfolio during prolonged downturns.'
+    },
+    lower: {
+      title: 'Lower Guardrail',
+      body:  'If your portfolio grows and your current withdrawal rate falls below this threshold, raise spending by 10%. Example: start at 5%, lower guardrail -20% → triggers at 4%. Lets you enjoy good market performance.'
+    },
+    horizon: {
+      title: 'Retirement Horizon',
+      body:  'How many years your portfolio needs to last. Early retirees (40s) may need 40–50 years. Longer horizons generally call for more conservative withdrawal rates or more flexible strategies like Guardrails.'
+    },
+    death: {
+      title: 'Expected Death Age',
+      body:  'The age at which your portfolio should reach $0. The longer you expect to live, the lower your annual spend (same portfolio spread over more years). Match this with your Die With Zero app setting for consistency.'
+    },
+    dwzmode: {
+      title: 'Die With Zero Mode',
+      body:  'Calculates the exact annual withdrawal to deplete your portfolio to $0 at your expected death. Based on Bill Perkins\' idea that money unspent at the end of your life represents experiences you chose not to have.'
+    }
+  };
+
+  // ── Mode explainer texts ──
+  const MODE_EXPLAIN = {
+    fixed:      '<strong>Fixed SWR</strong> — Withdraw a set % of your original portfolio each year. The 4% rule survived every 30-year historical period. Simple and safe, but you may die with large unspent wealth.',
+    guardrails: '<strong>Guardrails (Guyton-Klinger)</strong> — Start at 5%, then cut spending 10% if markets fall too far, or raise 10% when they recover. Allows a higher starting rate than fixed rules with similar long-term safety.',
+    dwz:        '<strong>Die With Zero</strong> — The exact annual spend to deplete your portfolio to $0 at your expected death. Frees you to spend more now — money left unspent at death was life energy traded for nothing.'
+  };
+
+  // ── Tooltip logic ──
+  const tipEl    = $('tooltip');
+  const tipTitle = $('tip-title');
+  const tipBody  = $('tip-body');
+  let activeTip  = null;
+
+  function openTip(btn, key) {
+    const t = TIPS[key]; if (!t) return;
+    tipTitle.textContent = t.title;
+    tipBody.textContent  = t.body;
+
+    tipEl.classList.remove('visible');
+    tipEl.style.left = '-9999px';
+    tipEl.style.top  = '-9999px';
+    tipEl.classList.add('visible');
+
+    const br  = btn.getBoundingClientRect();
+    const tw  = tipEl.offsetWidth;
+    const th  = tipEl.offsetHeight;
+    const vw  = window.innerWidth;
+    const vh  = window.innerHeight;
+    const pad = 8;
+
+    let left = br.left;
+    let top  = br.bottom + 6;
+
+    if (left + tw + pad > vw) left = Math.max(pad, vw - tw - pad);
+    if (top + th + pad > vh)  top  = br.top - th - 6;
+
+    tipEl.style.left = left + 'px';
+    tipEl.style.top  = top  + 'px';
+    activeTip = btn;
+  }
+
+  function closeTip() {
+    tipEl.classList.remove('visible');
+    activeTip = null;
+  }
+
+  document.addEventListener('click', e => {
+    const btn = e.target.closest('.tip-btn');
+    if (btn) {
+      e.stopPropagation();
+      if (activeTip === btn) { closeTip(); return; }
+      openTip(btn, btn.dataset.tip);
+    } else if (activeTip) {
+      closeTip();
+    }
+  });
+
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeTip(); });
 
   // ── Boot ──
   function boot() {
@@ -458,21 +592,21 @@
   // ── Mode ──
   function setMode(m, recalc=true) {
     MODE = m;
-    ['fixed','guardrails','dwz'].forEach(id => $('mode-'+id).classList.toggle('active', id === m));
-    $('fixed-inputs').classList.toggle('hidden',      m !== 'fixed');
-    $('guardrails-inputs').classList.toggle('hidden', m !== 'guardrails');
-    $('dwz-inputs').classList.toggle('hidden',        m !== 'dwz');
+    ['fixed','guardrails','dwz'].forEach(id => $('mode-'+id).classList.toggle('active', id===m));
+    $('fixed-inputs').classList.toggle('hidden',      m!=='fixed');
+    $('guardrails-inputs').classList.toggle('hidden', m!=='guardrails');
+    $('dwz-inputs').classList.toggle('hidden',        m!=='dwz');
     if (recalc) calc();
   }
   $('mode-fixed').onclick      = () => setMode('fixed');
   $('mode-guardrails').onclick = () => setMode('guardrails');
   $('mode-dwz').onclick        = () => setMode('dwz');
 
-  // ── Scenario toggle (Guardrails) ──
+  // ── Scenario toggle ──
   $('scen-stress').onclick = () => { tableScen='stress'; $('scen-stress').classList.add('active'); $('scen-base').classList.remove('active'); renderTable(lastStressRows); };
   $('scen-base').onclick   = () => { tableScen='base';   $('scen-base').classList.add('active');   $('scen-stress').classList.remove('active'); renderTable(lastBaseRows); };
 
-  // ── Slider displays ──
+  // ── Sliders ──
   function syncSliderDisplays() {
     $('v-return').textContent  = $('i-return').value + '%';
     $('v-swr').textContent     = $('i-swr').value + '%';
@@ -483,8 +617,8 @@
     $('v-death').textContent   = $('i-death').value;
   }
 
-  const ALL_INPUTS = ['i-age','i-income','i-expenses','i-savings','i-return','i-swr','i-iwr','i-upper','i-lower','i-horizon','i-death'];
-  ALL_INPUTS.forEach(id => $(id).addEventListener('input', () => { syncSliderDisplays(); calc(); scheduleSave(); }));
+  ['i-age','i-income','i-expenses','i-savings','i-return','i-swr','i-iwr','i-upper','i-lower','i-horizon','i-death']
+    .forEach(id => $(id).addEventListener('input', () => { syncSliderDisplays(); calc(); scheduleSave(); }));
 
   function scheduleSave() { clearTimeout(saveTimer); saveTimer = setTimeout(persist, 1200); }
   $('sync-btn').onclick = () => { if (S.pat && S.gistId) pullGist(); };
@@ -503,116 +637,86 @@
       lower:    Math.max(1,    +$('i-lower').value    || 20),
       horizon:  Math.max(5,    +$('i-horizon').value  || 30),
       deathAge: Math.max(50,   +$('i-death').value    || 85),
-      mode:     MODE,
+      mode: MODE,
     };
   }
 
-  // ── FIRE accumulation ──
+  // ── Calculations ──
   function calcFIRE(inp) {
-    const effectiveRate = inp.mode === 'guardrails' ? inp.iwr : inp.swr;
-    const fireNumber    = inp.expenses / effectiveRate;
-    const annualSavings = inp.income - inp.expenses;
-    const savingsRate   = inp.income > 0 ? annualSavings / inp.income : 0;
-    const progress      = fireNumber > 0 ? Math.min(1, inp.savings / fireNumber) : 1;
-
-    if (inp.savings >= fireNumber && fireNumber > 0)
-      return { fireNumber, annualSavings, savingsRate, yearsToFire:0, fireAge:inp.age, progress:1, canReach:true, alreadyFire:true, effectiveRate };
-
-    const canGrow = inp.savings>0 && inp.ret>0 && inp.savings*Math.pow(1+inp.ret,100)>=fireNumber;
-    if (annualSavings<=0 && !canGrow)
-      return { fireNumber, annualSavings, savingsRate, yearsToFire:null, fireAge:null, progress, canReach:false, alreadyFire:false, effectiveRate };
-
-    let yearsToFire;
-    if (inp.ret===0) {
-      yearsToFire = annualSavings>0 ? (fireNumber-inp.savings)/annualSavings : null;
-    } else if (annualSavings<=0) {
-      yearsToFire = inp.savings>0 ? Math.log(fireNumber/inp.savings)/Math.log(1+inp.ret) : null;
-    } else {
-      const ratio = (fireNumber+annualSavings/inp.ret)/(inp.savings+annualSavings/inp.ret);
-      yearsToFire = ratio>0 ? Math.log(ratio)/Math.log(1+inp.ret) : null;
-    }
-    return { fireNumber, annualSavings, savingsRate, yearsToFire, fireAge: yearsToFire!=null?inp.age+yearsToFire:null, progress, canReach:yearsToFire!=null, alreadyFire:false, effectiveRate };
+    const er = inp.mode==='guardrails' ? inp.iwr : inp.swr;
+    const fireNumber=inp.expenses/er, annualSavings=inp.income-inp.expenses;
+    const savingsRate=inp.income>0?annualSavings/inp.income:0;
+    const progress=fireNumber>0?Math.min(1,inp.savings/fireNumber):1;
+    if (inp.savings>=fireNumber && fireNumber>0) return {fireNumber,annualSavings,savingsRate,yearsToFire:0,fireAge:inp.age,progress:1,canReach:true,alreadyFire:true,effectiveRate:er};
+    const canGrow=inp.savings>0&&inp.ret>0&&inp.savings*Math.pow(1+inp.ret,100)>=fireNumber;
+    if (annualSavings<=0&&!canGrow) return {fireNumber,annualSavings,savingsRate,yearsToFire:null,fireAge:null,progress,canReach:false,alreadyFire:false,effectiveRate:er};
+    let ytf;
+    if (inp.ret===0) ytf=annualSavings>0?(fireNumber-inp.savings)/annualSavings:null;
+    else if (annualSavings<=0) ytf=inp.savings>0?Math.log(fireNumber/inp.savings)/Math.log(1+inp.ret):null;
+    else { const ratio=(fireNumber+annualSavings/inp.ret)/(inp.savings+annualSavings/inp.ret); ytf=ratio>0?Math.log(ratio)/Math.log(1+inp.ret):null; }
+    return {fireNumber,annualSavings,savingsRate,yearsToFire:ytf,fireAge:ytf!=null?inp.age+ytf:null,progress,canReach:ytf!=null,alreadyFire:false,effectiveRate:er};
   }
 
-  function buildAccumProjections({ savings, annualSavings, ret, yearsToFire }) {
-    const years = yearsToFire!=null ? Math.min(Math.ceil(yearsToFire)+8, 70) : 60;
+  function buildAccumPts({savings,annualSavings,ret,yearsToFire}) {
+    const years=yearsToFire!=null?Math.min(Math.ceil(yearsToFire)+8,70):60;
     const pts=[]; let v=savings;
-    for (let t=0; t<=years; t++) { pts.push({t,v}); v=v*(1+ret)+annualSavings; if(v<0)v=0; }
+    for(let t=0;t<=years;t++){pts.push({t,v});v=v*(1+ret)+annualSavings;if(v<0)v=0;}
     return pts;
   }
 
-  // ── Die With Zero calculation ──
   function calcDWZ(portfolio, ret, fireAge, deathAge) {
-    const N = Math.round(deathAge - fireAge);
-    if (N <= 0) return { valid:false };
-    const annualSpend = ret===0 ? portfolio/N : portfolio*ret/(1-Math.pow(1+ret,-N));
-    const spend4pct   = portfolio * 0.04;
-    const totalSpend  = annualSpend * N;
-    const returns     = totalSpend - portfolio;
-    return { valid:true, annualSpend, N, spend4pct, uplift:annualSpend-spend4pct, upliftPct:(annualSpend-spend4pct)/spend4pct*100, totalSpend, returns };
+    const N=Math.round(deathAge-fireAge); if(N<=0) return {valid:false};
+    const annualSpend=ret===0?portfolio/N:portfolio*ret/(1-Math.pow(1+ret,-N));
+    const spend4=portfolio*0.04;
+    return {valid:true,annualSpend,N,spend4,uplift:annualSpend-spend4,upliftPct:(annualSpend-spend4)/spend4*100,totalSpend:annualSpend*N,returns:annualSpend*N-portfolio};
   }
 
-  function buildDWZProjections(portfolio, annualSpend, ret, fireAge, N) {
+  function buildDWZPts(portfolio, annualSpend, ret, fireAge, N) {
     const pts=[]; let v=portfolio;
-    for (let t=0; t<=N; t++) {
-      pts.push({ t, age: Math.round(fireAge)+t, v: Math.max(0,v) });
-      v = v*(1+ret) - annualSpend;
-    }
+    for(let t=0;t<=N;t++){pts.push({t,age:Math.round(fireAge)+t,v:Math.max(0,v)});v=v*(1+ret)-annualSpend;}
     return pts;
   }
 
-  function build4PctProjections(portfolio, ret, fireAge, N) {
-    const spend4=portfolio*0.04; const pts=[]; let v=portfolio;
-    for (let t=0; t<=N; t++) {
-      pts.push({ t, age: Math.round(fireAge)+t, v: Math.max(0,v) });
-      v = v*(1+ret) - spend4;
-    }
+  function build4PctPts(portfolio, ret, fireAge, N) {
+    const s4=portfolio*0.04; const pts=[]; let v=portfolio;
+    for(let t=0;t<=N;t++){pts.push({t,age:Math.round(fireAge)+t,v:Math.max(0,v)});v=v*(1+ret)-s4;}
     return pts;
   }
 
-  // ── Guardrails simulation ──
-  function simulateDecumulation(startPortfolio, initialSpend, ret, iwr, upperPct, lowerPct, horizon, startAge) {
-    const rows=[]; let portfolio=startPortfolio, spend=initialSpend;
-    const upperTrigger=iwr*(1+upperPct/100), lowerTrigger=iwr*(1-lowerPct/100);
-    rows.push({year:0,age:startAge,portfolioStart:portfolio,currentRate:iwr*100,withdraw:0,event:'start',portfolioEnd:portfolio});
-    for (let year=1; year<=horizon; year++) {
-      const portfolioStart=portfolio*(1+ret);
-      const currentRate=portfolioStart>0?spend/portfolioStart:Infinity;
-      let event='normal';
-      if (currentRate>upperTrigger)      { spend*=0.90; event='cut'; }
-      else if (currentRate<lowerTrigger) { spend*=1.10; event='raise'; }
-      const portfolioEnd=Math.max(0,portfolioStart-spend);
-      rows.push({year,age:startAge+year,portfolioStart,currentRate:currentRate*100,withdraw:spend,event,portfolioEnd});
-      portfolio=portfolioEnd; if(portfolio<=0) break;
+  function simulateDecumulation(sp, is, ret, iwr, up, lo, h, sa) {
+    const rows=[]; let port=sp, spend=is;
+    const ut=iwr*(1+up/100), lt=iwr*(1-lo/100);
+    rows.push({year:0,age:sa,portfolioStart:port,currentRate:iwr*100,withdraw:0,event:'start',portfolioEnd:port});
+    for(let y=1;y<=h;y++){
+      const ps=port*(1+ret), cr=ps>0?spend/ps:Infinity;
+      let ev='normal';
+      if(cr>ut){spend*=0.90;ev='cut';}else if(cr<lt){spend*=1.10;ev='raise';}
+      const pe=Math.max(0,ps-spend);
+      rows.push({year:y,age:sa+y,portfolioStart:ps,currentRate:cr*100,withdraw:spend,event:ev,portfolioEnd:pe});
+      port=pe; if(port<=0)break;
     }
     return rows;
   }
 
   // ── Main calc ──
   function calc() {
-    const inp    = getInputs();
-    const result = calcFIRE(inp);
+    const inp=getInputs(), result=calcFIRE(inp);
     renderResults(inp, result);
 
-    // Accumulation chart (all modes)
-    if (result.canReach || result.alreadyFire) {
-      drawAccumChart(buildAccumProjections({...inp,...result}), result.fireNumber, result.yearsToFire);
-    } else {
-      drawChartEmpty('chart-svg');
-    }
+    if (result.canReach||result.alreadyFire) drawAccumChart(buildAccumPts({...inp,...result}), result.fireNumber, result.yearsToFire);
+    else drawChartEmpty('chart-svg');
 
-    // Guardrails mode
-    if (MODE === 'guardrails' && result.fireNumber > 0) {
-      const stressRet = Math.max(0, inp.ret-0.03);
-      const startPort = result.alreadyFire ? inp.savings : result.fireNumber;
-      const startAge  = result.alreadyFire ? inp.age : Math.round(result.fireAge||inp.age);
-      lastBaseRows   = simulateDecumulation(startPort, inp.expenses, inp.ret,   inp.iwr, inp.upper, inp.lower, inp.horizon, startAge);
-      lastStressRows = simulateDecumulation(startPort, inp.expenses, stressRet, inp.iwr, inp.upper, inp.lower, inp.horizon, startAge);
-      $('leg-base-label').textContent   = `Base (${(inp.ret*100).toFixed(1)}%)`;
-      $('leg-stress-label').textContent = `Stress (${(Math.max(0,inp.ret-0.03)*100).toFixed(1)}%)`;
-      drawDecuChart(lastBaseRows, lastStressRows, startPort);
-      renderTable(tableScen==='base' ? lastBaseRows : lastStressRows);
-      renderGuardrailsSummary(inp, lastBaseRows, lastStressRows);
+    if (MODE==='guardrails' && result.fireNumber>0) {
+      const sr=Math.max(0,inp.ret-0.03);
+      const sp=result.alreadyFire?inp.savings:result.fireNumber;
+      const sa=result.alreadyFire?inp.age:Math.round(result.fireAge||inp.age);
+      lastBaseRows  =simulateDecumulation(sp,inp.expenses,inp.ret,inp.iwr,inp.upper,inp.lower,inp.horizon,sa);
+      lastStressRows=simulateDecumulation(sp,inp.expenses,sr,     inp.iwr,inp.upper,inp.lower,inp.horizon,sa);
+      $('leg-base-label').textContent  =`Base (${(inp.ret*100).toFixed(1)}%)`;
+      $('leg-stress-label').textContent=`Stress (${(Math.max(0,inp.ret-0.03)*100).toFixed(1)}%)`;
+      drawDecuChart(lastBaseRows,lastStressRows,sp);
+      renderTable(tableScen==='base'?lastBaseRows:lastStressRows);
+      renderGuardrailsSummary(inp,lastBaseRows,lastStressRows);
       $('decu-chart-wrap').classList.remove('hidden');
       $('table-wrap').classList.remove('hidden');
     } else {
@@ -620,28 +724,25 @@
       $('table-wrap').classList.add('hidden');
     }
 
-    // Die With Zero mode
-    if (MODE === 'dwz' && result.fireNumber > 0) {
-      const startPort = result.alreadyFire ? inp.savings : result.fireNumber;
-      const fireAge   = result.alreadyFire ? inp.age : (result.fireAge || inp.age);
-      const dwz       = calcDWZ(startPort, inp.ret, fireAge, inp.deathAge);
+    if (MODE==='dwz' && result.fireNumber>0) {
+      const sp=result.alreadyFire?inp.savings:result.fireNumber;
+      const fa=result.alreadyFire?inp.age:(result.fireAge||inp.age);
+      const dwz=calcDWZ(sp,inp.ret,fa,inp.deathAge);
       if (dwz.valid) {
         renderDWZSection(dwz);
-        const dwzPts  = buildDWZProjections(startPort, dwz.annualSpend, inp.ret, fireAge, dwz.N);
-        const rule4Pts = build4PctProjections(startPort, inp.ret, fireAge, dwz.N);
-        drawDWZChart(dwzPts, rule4Pts, startPort, fireAge, inp.deathAge);
+        drawDWZChart(buildDWZPts(sp,dwz.annualSpend,inp.ret,fa,dwz.N), build4PctPts(sp,inp.ret,fa,dwz.N), sp, fa, inp.deathAge);
         $('dwz-chart-wrap').classList.remove('hidden');
-      } else {
-        $('dwz-chart-wrap').classList.add('hidden');
-      }
-    } else {
-      $('dwz-chart-wrap').classList.add('hidden');
-    }
+      } else { $('dwz-chart-wrap').classList.add('hidden'); }
+    } else { $('dwz-chart-wrap').classList.add('hidden'); }
   }
 
   // ── Render results ──
   function renderResults(inp, r) {
     let html = '';
+
+    // Mode explainer
+    html += `<div class="mode-explainer">${MODE_EXPLAIN[MODE]}</div>`;
+
     if (r.alreadyFire)
       html += `<div class="banner success">You have reached your FIRE number. You are financially independent.</div>`;
     else if (!r.canReach)
@@ -649,14 +750,19 @@
 
     const rateLabel = +(r.effectiveRate*100).toFixed(2);
     html += `<div class="result-main">${fmtMoney(r.fireNumber)}</div>
-      <div class="result-sub">FIRE number &mdash; expenses / ${rateLabel}%${inp.mode==='guardrails'?' (IWR)':inp.mode==='dwz'?' (SWR ref)':''}</div>`;
+      <div class="result-sub-row">
+        <span class="result-sub">FIRE number &mdash; expenses / ${rateLabel}%</span>
+        <button class="tip-btn" data-tip="firenumber">?</button>
+      </div>`;
 
     html += `<div class="prog-ring-wrap">${svgRing(r.progress)}
-      <div class="prog-info"><div class="prog-pct">${(r.progress*100).toFixed(1)}%</div>
-      <div class="prog-desc">of FIRE number saved</div></div></div>`;
+      <div class="prog-info">
+        <div class="prog-pct">${(r.progress*100).toFixed(1)}%</div>
+        <div class="prog-desc">of FIRE number saved</div>
+      </div></div>`;
 
     html += `<div class="metrics">`;
-    if (r.yearsToFire!=null && !r.alreadyFire) {
+    if (r.yearsToFire!=null&&!r.alreadyFire) {
       html += metric('Years to FIRE', r.yearsToFire.toFixed(1), 'good');
       html += metric('FIRE Age', Math.round(r.fireAge).toString(), 'good');
     } else if (r.alreadyFire) {
@@ -666,7 +772,7 @@
     html += metric('Current Savings', fmtMoney(inp.savings));
     html += `</div>`;
 
-    if (inp.income > 0) {
+    if (inp.income>0) {
       const rate=(Math.max(0,Math.min(1,r.savingsRate))*100).toFixed(0);
       html += `<div class="split-bar-wrap"><div class="form-label">Income Split</div>
         <div class="split-bar"><div class="split-fill" style="width:${rate}%"></div></div>
@@ -678,47 +784,35 @@
   }
 
   function renderDWZSection(dwz) {
-    const el = $('mode-extra'); if (!el) return;
-    const upliftSign = dwz.uplift >= 0 ? '+' : '';
-    el.innerHTML = `
-      <div class="dwz-spend-block">
-        <div class="dwz-spend-label">Annual Spend in Retirement</div>
-        <div class="dwz-spend-val">${fmtMoney(dwz.annualSpend)}</div>
-        <div class="dwz-spend-sub">
-          vs 4% rule ${fmtMoney(dwz.spend4pct)}/yr &nbsp;
-          <span class="dwz-uplift">${upliftSign}${fmtMoney(dwz.uplift)} (${upliftSign}${dwz.upliftPct.toFixed(0)}%)</span>
-        </div>
-        <div class="dwz-stats">
-          <div class="dwz-stat-row"><span>Retirement years</span><span>${dwz.N} years</span></div>
-          <div class="dwz-stat-row"><span>Total cash withdrawn</span><span>${fmtMoney(dwz.totalSpend)}</span></div>
-          <div class="dwz-stat-row"><span>Of which: investment returns</span><span>${fmtMoney(Math.max(0,dwz.returns))}</span></div>
-        </div>
-      </div>`;
+    const el=$('mode-extra'); if(!el) return;
+    const s=dwz.uplift>=0?'+':'';
+    el.innerHTML=`<div class="dwz-spend-block">
+      <div class="dwz-spend-label">Annual Spend in Retirement</div>
+      <div class="dwz-spend-val">${fmtMoney(dwz.annualSpend)}</div>
+      <div class="dwz-spend-sub">vs 4% rule ${fmtMoney(dwz.spend4)}/yr &nbsp;
+        <span class="dwz-uplift">${s}${fmtMoney(dwz.uplift)} (${s}${dwz.upliftPct.toFixed(0)}%)</span>
+      </div>
+      <div class="dwz-stats">
+        <div class="dwz-stat-row"><span>Retirement years</span><span>${dwz.N} years</span></div>
+        <div class="dwz-stat-row"><span>Total cash withdrawn</span><span>${fmtMoney(dwz.totalSpend)}</span></div>
+        <div class="dwz-stat-row"><span>Of which: investment returns</span><span>${fmtMoney(Math.max(0,dwz.returns))}</span></div>
+      </div></div>`;
   }
 
   function renderGuardrailsSummary(inp, baseRows, stressRows) {
-    const el = $('mode-extra'); if (!el) return;
-    const sum = rows => {
-      const last=rows[rows.length-1];
-      return { finalPort:last.portfolioEnd, cuts:rows.filter(r=>r.event==='cut').length,
-        raises:rows.filter(r=>r.event==='raise').length, depleted:last.portfolioEnd<=0,
-        minSpend:Math.min(...rows.filter(r=>r.year>0).map(r=>r.withdraw)) };
-    };
-    const b=sum(baseRows), s=sum(stressRows);
-    const stressRet=Math.max(0,inp.ret-0.03);
-    el.innerHTML = `<div class="g-summary">
-      <div class="g-card">
-        <div class="g-card-title">Base (${(inp.ret*100).toFixed(1)}%)</div>
+    const el=$('mode-extra'); if(!el) return;
+    const sum=rows=>{const last=rows[rows.length-1];return{finalPort:last.portfolioEnd,cuts:rows.filter(r=>r.event==='cut').length,raises:rows.filter(r=>r.event==='raise').length,depleted:last.portfolioEnd<=0,minSpend:Math.min(...rows.filter(r=>r.year>0).map(r=>r.withdraw))};};
+    const b=sum(baseRows),s=sum(stressRows),sr=Math.max(0,inp.ret-0.03);
+    el.innerHTML=`<div class="g-summary">
+      <div class="g-card"><div class="g-card-title">Base (${(inp.ret*100).toFixed(1)}%)</div>
         <div class="g-card-row"><span>Final portfolio</span><span>${b.depleted?'Depleted':fmtMoney(b.finalPort)}</span></div>
         <div class="g-card-row"><span>Cuts triggered</span><span>${b.cuts}</span></div>
-        <div class="g-card-row"><span>Raises triggered</span><span>${b.raises}</span></div>
-      </div>
-      <div class="g-card">
-        <div class="g-card-title">Stress (${(stressRet*100).toFixed(1)}%)</div>
+        <div class="g-card-row"><span>Raises triggered</span><span>${b.raises}</span></div></div>
+      <div class="g-card"><div class="g-card-title">Stress (${(sr*100).toFixed(1)}%)</div>
         <div class="g-card-row"><span>Final portfolio</span><span style="color:${s.depleted?'#c07070':'inherit'}">${s.depleted?'Depleted':fmtMoney(s.finalPort)}</span></div>
         <div class="g-card-row"><span>Cuts triggered</span><span style="color:${s.cuts>0?'#c07070':'inherit'}">${s.cuts}</span></div>
-        <div class="g-card-row"><span>Min spending</span><span>${fmtMoney(s.minSpend)}/yr</span></div>
-      </div></div>`;
+        <div class="g-card-row"><span>Min spending</span><span>${fmtMoney(s.minSpend)}/yr</span></div></div>
+    </div>`;
   }
 
   function metric(label, val, cls='') {
@@ -726,147 +820,88 @@
   }
 
   function svgRing(progress) {
-    const r=28,cx=34,cy=34,stroke=4, circ=2*Math.PI*r;
-    const dash=Math.min(1,Math.max(0,progress))*circ;
+    const r=28,cx=34,cy=34,s=4,c=2*Math.PI*r,d=Math.min(1,Math.max(0,progress))*c;
     return `<svg class="prog-ring" width="68" height="68" viewBox="0 0 68 68">
-      <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#1e1e1e" stroke-width="${stroke}"/>
+      <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#1e1e1e" stroke-width="${s}"/>
       <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${progress>=1?'#4a8c4a':'#c8a96e'}"
-        stroke-width="${stroke}" stroke-dasharray="${dash} ${circ}" stroke-dashoffset="${circ/4}"
+        stroke-width="${s}" stroke-dasharray="${d} ${c}" stroke-dashoffset="${c/4}"
         stroke-linecap="round" transform="rotate(-90 ${cx} ${cy})"/></svg>`;
   }
 
-  // ── Accumulation chart ──
+  // ── Charts ──
   const CW=800,CH=220,PL=64,PR=24,PT=16,PB=38,IW=CW-PL-PR,IH=CH-PT-PB;
 
-  function drawAccumChart(pts, fireNumber, yearsToFire) {
-    const maxV=Math.max(fireNumber*1.18,pts[pts.length-1].v*1.05,1), maxT=pts[pts.length-1].t;
-    const xS=t=>PL+(t/maxT)*IW, yS=v=>PT+IH-(v/maxV)*IH;
-    let gl='',yl='';
-    for(let i=0;i<=4;i++){const v=maxV*i/4,y=yS(v);gl+=`<line x1="${PL}" y1="${y}" x2="${PL+IW}" y2="${y}" stroke="#1a1a1a" stroke-width="1"/>`;yl+=`<text x="${PL-8}" y="${y+4}" text-anchor="end" fill="#333" font-size="10">${fmtMoney(v)}</text>`;}
-    let xl='';const step=maxT<=20?5:maxT<=40?10:15;
-    for(let t=0;t<=maxT;t+=step)xl+=`<text x="${xS(t)}" y="${PT+IH+18}" text-anchor="middle" fill="#333" font-size="10">yr ${t}</text>`;
+  function drawAccumChart(pts, fireNumber, ytf) {
+    const maxV=Math.max(fireNumber*1.18,pts[pts.length-1].v*1.05,1),maxT=pts[pts.length-1].t;
+    const xS=t=>PL+(t/maxT)*IW,yS=v=>PT+IH-(v/maxV)*IH;
+    let gl='',yl='';for(let i=0;i<=4;i++){const v=maxV*i/4,y=yS(v);gl+=`<line x1="${PL}" y1="${y}" x2="${PL+IW}" y2="${y}" stroke="#1a1a1a" stroke-width="1"/>`;yl+=`<text x="${PL-8}" y="${y+4}" text-anchor="end" fill="#333" font-size="10">${fmtMoney(v)}</text>`;}
+    let xl='';const step=maxT<=20?5:maxT<=40?10:15;for(let t=0;t<=maxT;t+=step)xl+=`<text x="${xS(t)}" y="${PT+IH+18}" text-anchor="middle" fill="#333" font-size="10">yr ${t}</text>`;
     const fy=yS(fireNumber);
     const fl=`<line x1="${PL}" y1="${fy}" x2="${PL+IW}" y2="${fy}" stroke="#c8a96e" stroke-width="1" stroke-dasharray="5 4" opacity="0.6"/><text x="${PL+IW-4}" y="${fy-6}" text-anchor="end" fill="#c8a96e" font-size="10" opacity="0.8">FIRE target</text>`;
     const lp=pts.map(p=>`${xS(p.t)},${yS(p.v)}`).join(' ');
     const ap=`M${xS(0)},${PT+IH} L${xS(0)},${yS(pts[0].v)} `+pts.slice(1).map(p=>`L${xS(p.t)},${yS(p.v)}`).join(' ')+` L${xS(pts[pts.length-1].t)},${PT+IH} Z`;
     let id='',md='';
-    if(yearsToFire!=null&&yearsToFire<=maxT){const ix=xS(yearsToFire);id=`<circle cx="${ix}" cy="${fy}" r="5" fill="#c8a96e"/><circle cx="${ix}" cy="${fy}" r="9" fill="none" stroke="#c8a96e" stroke-width="1" opacity="0.4"/>`;}
-    if(yearsToFire!=null)[0.25,0.5,0.75].forEach(f=>{const idx=Math.round(yearsToFire*f);if(idx<pts.length)md+=`<circle cx="${xS(pts[idx].t)}" cy="${yS(pts[idx].v)}" r="3" fill="#2e2e2e" stroke="#444" stroke-width="1"/>`;});
+    if(ytf!=null&&ytf<=maxT){const ix=xS(ytf);id=`<circle cx="${ix}" cy="${fy}" r="5" fill="#c8a96e"/><circle cx="${ix}" cy="${fy}" r="9" fill="none" stroke="#c8a96e" stroke-width="1" opacity="0.4"/>`;}
+    if(ytf!=null)[0.25,0.5,0.75].forEach(f=>{const i=Math.round(ytf*f);if(i<pts.length)md+=`<circle cx="${xS(pts[i].t)}" cy="${yS(pts[i].v)}" r="3" fill="#2e2e2e" stroke="#444" stroke-width="1"/>`;});
     $('chart-svg').innerHTML=`<defs><linearGradient id="fg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#e8e8e8" stop-opacity="0.07"/><stop offset="100%" stop-color="#e8e8e8" stop-opacity="0"/></linearGradient><clipPath id="cc"><rect x="${PL}" y="${PT}" width="${IW}" height="${IH}"/></clipPath></defs>${gl}${yl}${xl}${fl}<g clip-path="url(#cc)"><path d="${ap}" fill="url(#fg)"/><polyline points="${lp}" fill="none" stroke="#e8e8e8" stroke-width="1.5" stroke-linejoin="round"/>${md}${id}</g><line x1="${PL}" y1="${PT}" x2="${PL}" y2="${PT+IH}" stroke="#2a2a2a" stroke-width="1"/><line x1="${PL}" y1="${PT+IH}" x2="${PL+IW}" y2="${PT+IH}" stroke="#2a2a2a" stroke-width="1"/>`;
   }
 
-  // ── Decumulation chart ──
   const DCW=800,DCH=200,DPL=64,DPR=24,DPT=14,DPB=36,DIW=DCW-DPL-DPR,DIH=DCH-DPT-DPB;
 
-  function drawDecuChart(baseRows, stressRows, startPort) {
-    const allV=[...baseRows,...stressRows].flatMap(r=>[r.portfolioStart,r.portfolioEnd||0]);
-    const maxV=Math.max(startPort*1.15,...allV,1), maxT=Math.max(baseRows[baseRows.length-1].year,stressRows[stressRows.length-1].year);
-    const xS=t=>DPL+(t/maxT)*DIW, yS=v=>DPT+DIH-(Math.max(0,v)/maxV)*DIH;
-    let gl='',yl='';
-    for(let i=0;i<=4;i++){const v=maxV*i/4,y=yS(v);gl+=`<line x1="${DPL}" y1="${y}" x2="${DPL+DIW}" y2="${y}" stroke="#1a1a1a" stroke-width="1"/>`;yl+=`<text x="${DPL-8}" y="${y+4}" text-anchor="end" fill="#333" font-size="10">${fmtMoney(v)}</text>`;}
-    let xl='';const step=maxT<=20?5:maxT<=40?10:15;
-    for(let t=0;t<=maxT;t+=step)xl+=`<text x="${xS(t)}" y="${DPT+DIH+18}" text-anchor="middle" fill="#333" font-size="10">yr ${t}</text>`;
-    const sy=yS(startPort);
-    const rl=`<line x1="${DPL}" y1="${sy}" x2="${DPL+DIW}" y2="${sy}" stroke="#2a2a2a" stroke-width="1" stroke-dasharray="4 4"/>`;
-    const bl=baseRows.map(r=>`${xS(r.year)},${yS(r.portfolioEnd??r.portfolioStart)}`).join(' ');
-    const sl=stressRows.map(r=>`${xS(r.year)},${yS(r.portfolioEnd??r.portfolioStart)}`).join(' ');
-    let ed='';
-    stressRows.forEach(r=>{if(r.event==='cut'||r.event==='raise'){const col=r.event==='cut'?'#c07070':'#70a870';ed+=`<circle cx="${xS(r.year)}" cy="${yS(r.portfolioEnd)}" r="4" fill="${col}" opacity="0.85"/>"`;}});
-    $('decu-svg').innerHTML=`<clipPath id="dc"><rect x="${DPL}" y="${DPT}" width="${DIW}" height="${DIH}"/></clipPath>${gl}${yl}${xl}${rl}<g clip-path="url(#dc)"><polyline points="${bl}" fill="none" stroke="#e8e8e8" stroke-width="1.5" stroke-linejoin="round" opacity="0.5"/><polyline points="${sl}" fill="none" stroke="#c8a96e" stroke-width="1.5" stroke-linejoin="round"/>${ed}</g><line x1="${DPL}" y1="${DPT}" x2="${DPL}" y2="${DPT+DIH}" stroke="#2a2a2a" stroke-width="1"/><line x1="${DPL}" y1="${DPT+DIH}" x2="${DPL+DIW}" y2="${DPT+DIH}" stroke="#2a2a2a" stroke-width="1"/>`;
+  function drawDecuChart(br, sr, sp) {
+    const av=[...br,...sr].flatMap(r=>[r.portfolioStart,r.portfolioEnd||0]);
+    const maxV=Math.max(sp*1.15,...av,1),maxT=Math.max(br[br.length-1].year,sr[sr.length-1].year);
+    const xS=t=>DPL+(t/maxT)*DIW,yS=v=>DPT+DIH-(Math.max(0,v)/maxV)*DIH;
+    let gl='',yl='';for(let i=0;i<=4;i++){const v=maxV*i/4,y=yS(v);gl+=`<line x1="${DPL}" y1="${y}" x2="${DPL+DIW}" y2="${y}" stroke="#1a1a1a" stroke-width="1"/>`;yl+=`<text x="${DPL-8}" y="${y+4}" text-anchor="end" fill="#333" font-size="10">${fmtMoney(v)}</text>`;}
+    let xl='';const step=maxT<=20?5:maxT<=40?10:15;for(let t=0;t<=maxT;t+=step)xl+=`<text x="${xS(t)}" y="${DPT+DIH+18}" text-anchor="middle" fill="#333" font-size="10">yr ${t}</text>`;
+    const bl=br.map(r=>`${xS(r.year)},${yS(r.portfolioEnd??r.portfolioStart)}`).join(' ');
+    const sl=sr.map(r=>`${xS(r.year)},${yS(r.portfolioEnd??r.portfolioStart)}`).join(' ');
+    let ed='';sr.forEach(r=>{if(r.event==='cut'||r.event==='raise'){const col=r.event==='cut'?'#c07070':'#70a870';ed+=`<circle cx="${xS(r.year)}" cy="${yS(r.portfolioEnd)}" r="4" fill="${col}" opacity="0.85"/>"`;}});
+    $('decu-svg').innerHTML=`<clipPath id="dc"><rect x="${DPL}" y="${DPT}" width="${DIW}" height="${DIH}"/></clipPath>${gl}${yl}${xl}<g clip-path="url(#dc)"><polyline points="${bl}" fill="none" stroke="#e8e8e8" stroke-width="1.5" stroke-linejoin="round" opacity="0.5"/><polyline points="${sl}" fill="none" stroke="#c8a96e" stroke-width="1.5" stroke-linejoin="round"/>${ed}</g><line x1="${DPL}" y1="${DPT}" x2="${DPL}" y2="${DPT+DIH}" stroke="#2a2a2a" stroke-width="1"/><line x1="${DPL}" y1="${DPT+DIH}" x2="${DPL+DIW}" y2="${DPT+DIH}" stroke="#2a2a2a" stroke-width="1"/>`;
   }
 
-  // ── Die With Zero chart ──
   const ZCW=800,ZCH=200,ZPL=64,ZPR=24,ZPT=14,ZPB=36,ZIW=ZCW-ZPL-ZPR,ZIH=ZCH-ZPT-ZPB;
 
-  function drawDWZChart(dwzPts, rule4Pts, startPort, fireAge, deathAge) {
-    const allV=[...dwzPts,...rule4Pts].map(p=>p.v);
-    const maxV=Math.max(startPort*1.15,...allV,1);
-    const N=deathAge-Math.round(fireAge);
-    const xS=t=>ZPL+(t/N)*ZIW, yS=v=>ZPT+ZIH-(Math.max(0,v)/maxV)*ZIH;
-
-    let gl='',yl='';
-    for(let i=0;i<=4;i++){const v=maxV*i/4,y=yS(v);gl+=`<line x1="${ZPL}" y1="${y}" x2="${ZPL+ZIW}" y2="${y}" stroke="#1a1a1a" stroke-width="1"/>`;yl+=`<text x="${ZPL-8}" y="${y+4}" text-anchor="end" fill="#333" font-size="10">${fmtMoney(v)}</text>`;}
-
-    // X axis: age labels
-    let xl='';const step=N<=20?5:N<=40?10:15;
-    for(let t=0;t<=N;t+=step){
-      const age=Math.round(fireAge)+t;
-      xl+=`<text x="${xS(t)}" y="${ZPT+ZIH+18}" text-anchor="middle" fill="#333" font-size="10">age ${age}</text>`;
-    }
-
-    // 4% rule line (dashed, muted)
-    const r4pts=rule4Pts.map(p=>`${xS(p.t)},${yS(p.v)}`).join(' ');
-    // Annotate end of 4% line
-    const lastR4=rule4Pts[rule4Pts.length-1];
-    const r4EndX=xS(lastR4.t), r4EndY=yS(lastR4.v);
-    const r4label=lastR4.v>0?`<text x="${r4EndX-6}" y="${r4EndY-8}" text-anchor="end" fill="#444" font-size="9">${fmtMoney(lastR4.v)} unspent</text>`:'';
-
-    // DWZ line (amber, prominent)
-    const dwzPtsStr=dwzPts.map(p=>`${xS(p.t)},${yS(p.v)}`).join(' ');
-    // Area fill under DWZ line
-    const dwzArea=`M${xS(0)},${ZPT+ZIH} L${xS(0)},${yS(dwzPts[0].v)} `+dwzPts.slice(1).map(p=>`L${xS(p.t)},${yS(p.v)}`).join(' ')+` L${xS(dwzPts[dwzPts.length-1].t)},${ZPT+ZIH} Z`;
-
-    // Milestone dots on DWZ line every 10 years
-    let milestones='';
-    for(let t=10;t<N;t+=10){
-      const idx=dwzPts.findIndex(p=>p.t>=t);
-      if(idx>=0){const p=dwzPts[idx];milestones+=`<circle cx="${xS(p.t)}" cy="${yS(p.v)}" r="3" fill="#1a1a1a" stroke="#c8a96e" stroke-width="1.5"/>`;}
-    }
-
-    // Terminal dot at $0
-    const lastDWZ=dwzPts[dwzPts.length-1];
-    const termDot=`<circle cx="${xS(lastDWZ.t)}" cy="${yS(lastDWZ.v)}" r="5" fill="#c8a96e"/>
-      <circle cx="${xS(lastDWZ.t)}" cy="${yS(lastDWZ.v)}" r="9" fill="none" stroke="#c8a96e" stroke-width="1" opacity="0.4"/>
-      <text x="${xS(lastDWZ.t)}" y="${yS(lastDWZ.v)-10}" text-anchor="middle" fill="#c8a96e" font-size="9">$0</text>`;
-
-    $('dwz-svg').innerHTML=`
-      <defs>
-        <linearGradient id="dwzfg" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="#c8a96e" stop-opacity="0.1"/>
-          <stop offset="100%" stop-color="#c8a96e" stop-opacity="0"/>
-        </linearGradient>
-        <clipPath id="zc"><rect x="${ZPL}" y="${ZPT}" width="${ZIW}" height="${ZIH}"/></clipPath>
-      </defs>
-      ${gl}${yl}${xl}
-      <g clip-path="url(#zc)">
-        <polyline points="${r4pts}" fill="none" stroke="#555" stroke-width="1.5" stroke-dasharray="6 4"/>
-        ${r4label}
-        <path d="${dwzArea}" fill="url(#dwzfg)"/>
-        <polyline points="${dwzPtsStr}" fill="none" stroke="#c8a96e" stroke-width="2" stroke-linejoin="round"/>
-        ${milestones}${termDot}
-      </g>
-      <line x1="${ZPL}" y1="${ZPT}" x2="${ZPL}" y2="${ZPT+ZIH}" stroke="#2a2a2a" stroke-width="1"/>
-      <line x1="${ZPL}" y1="${ZPT+ZIH}" x2="${ZPL+ZIW}" y2="${ZPT+ZIH}" stroke="#2a2a2a" stroke-width="1"/>`;
+  function drawDWZChart(dwzPts, r4Pts, sp, fireAge, deathAge) {
+    const av=[...dwzPts,...r4Pts].map(p=>p.v);
+    const maxV=Math.max(sp*1.15,...av,1),N=deathAge-Math.round(fireAge);
+    const xS=t=>ZPL+(t/N)*ZIW,yS=v=>ZPT+ZIH-(Math.max(0,v)/maxV)*ZIH;
+    let gl='',yl='';for(let i=0;i<=4;i++){const v=maxV*i/4,y=yS(v);gl+=`<line x1="${ZPL}" y1="${y}" x2="${ZPL+ZIW}" y2="${y}" stroke="#1a1a1a" stroke-width="1"/>`;yl+=`<text x="${ZPL-8}" y="${y+4}" text-anchor="end" fill="#333" font-size="10">${fmtMoney(v)}</text>`;}
+    let xl='';const step=N<=20?5:N<=40?10:15;for(let t=0;t<=N;t+=step){const age=Math.round(fireAge)+t;xl+=`<text x="${xS(t)}" y="${ZPT+ZIH+18}" text-anchor="middle" fill="#333" font-size="10">age ${age}</text>`;}
+    const r4p=r4Pts.map(p=>`${xS(p.t)},${yS(p.v)}`).join(' ');
+    const lr4=r4Pts[r4Pts.length-1];
+    const r4lbl=lr4.v>0?`<text x="${xS(lr4.t)-6}" y="${yS(lr4.v)-8}" text-anchor="end" fill="#444" font-size="9">${fmtMoney(lr4.v)} unspent</text>`:'';
+    const dp=dwzPts.map(p=>`${xS(p.t)},${yS(p.v)}`).join(' ');
+    const da=`M${xS(0)},${ZPT+ZIH} L${xS(0)},${yS(dwzPts[0].v)} `+dwzPts.slice(1).map(p=>`L${xS(p.t)},${yS(p.v)}`).join(' ')+` L${xS(dwzPts[dwzPts.length-1].t)},${ZPT+ZIH} Z`;
+    let ms='';for(let t=10;t<N;t+=10){const i=dwzPts.findIndex(p=>p.t>=t);if(i>=0){const p=dwzPts[i];ms+=`<circle cx="${xS(p.t)}" cy="${yS(p.v)}" r="3" fill="#1a1a1a" stroke="#c8a96e" stroke-width="1.5"/>`;}}
+    const ld=dwzPts[dwzPts.length-1];
+    const td=`<circle cx="${xS(ld.t)}" cy="${yS(ld.v)}" r="5" fill="#c8a96e"/><circle cx="${xS(ld.t)}" cy="${yS(ld.v)}" r="9" fill="none" stroke="#c8a96e" stroke-width="1" opacity="0.4"/><text x="${xS(ld.t)}" y="${yS(ld.v)-10}" text-anchor="middle" fill="#c8a96e" font-size="9">$0</text>`;
+    $('dwz-svg').innerHTML=`<defs><linearGradient id="zg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#c8a96e" stop-opacity="0.1"/><stop offset="100%" stop-color="#c8a96e" stop-opacity="0"/></linearGradient><clipPath id="zc"><rect x="${ZPL}" y="${ZPT}" width="${ZIW}" height="${ZIH}"/></clipPath></defs>${gl}${yl}${xl}<g clip-path="url(#zc)"><polyline points="${r4p}" fill="none" stroke="#555" stroke-width="1.5" stroke-dasharray="6 4"/>${r4lbl}<path d="${da}" fill="url(#zg)"/><polyline points="${dp}" fill="none" stroke="#c8a96e" stroke-width="2" stroke-linejoin="round"/>${ms}${td}</g><line x1="${ZPL}" y1="${ZPT}" x2="${ZPL}" y2="${ZPT+ZIH}" stroke="#2a2a2a" stroke-width="1"/><line x1="${ZPL}" y1="${ZPT+ZIH}" x2="${ZPL+ZIW}" y2="${ZPT+ZIH}" stroke="#2a2a2a" stroke-width="1"/>`;
   }
 
-  // ── Guardrails table ──
   function renderTable(rows) {
-    $('table-body').innerHTML = rows.filter(r=>r.year>0).map(r => {
-      const dep=r.portfolioEnd<=0;
-      const rowCls=dep?'depleted-row':r.event==='cut'?'row-cut':r.event==='raise'?'row-raise':'';
+    $('table-body').innerHTML=rows.filter(r=>r.year>0).map(r=>{
+      const dep=r.portfolioEnd<=0,rc=dep?'depleted-row':r.event==='cut'?'row-cut':r.event==='raise'?'row-raise':'';
       const act=r.event==='cut'?'<span class="event-cut">↓ Cut 10%</span>':r.event==='raise'?'<span class="event-raise">↑ Raise 10%</span>':'<span class="event-normal">—</span>';
-      return `<tr class="${rowCls}"><td>${r.year}</td><td>${r.age}</td><td>${fmtMoney(r.portfolioStart)}</td><td>${r.currentRate.toFixed(1)}%</td><td>${fmtMoney(r.withdraw)}</td><td>${dep?'<span style="color:#c07070">Depleted</span>':act}</td></tr>`;
+      return `<tr class="${rc}"><td>${r.year}</td><td>${r.age}</td><td>${fmtMoney(r.portfolioStart)}</td><td>${r.currentRate.toFixed(1)}%</td><td>${fmtMoney(r.withdraw)}</td><td>${dep?'<span style="color:#c07070">Depleted</span>':act}</td></tr>`;
     }).join('');
   }
 
-  function drawChartEmpty(id) {
-    $(id).innerHTML=`<text x="400" y="110" text-anchor="middle" fill="#333" font-size="13" font-family="sans-serif">Adjust your numbers to see a projection</text>`;
-  }
+  function drawChartEmpty(id) { $(id).innerHTML=`<text x="400" y="110" text-anchor="middle" fill="#333" font-size="13" font-family="sans-serif">Adjust your numbers to see a projection</text>`; }
 
   // ── Gist ──
-  function ghFetch(pat,path,opts={}){return fetch(API+path,{...opts,headers:{'Authorization':`token ${pat}`,'Content-Type':'application/json',...(opts.headers||{})}});}
-  async function findGist(pat){for(let p=1;;p++){const r=await ghFetch(pat,`/gists?per_page=100&page=${p}`);if(!r.ok)return null;const list=await r.json();const hit=list.find(g=>g.files[GF]);if(hit){const full=await ghFetch(pat,`/gists/${hit.id}`);return full.ok?full.json():null;}if(list.length<100)return null;}}
-  function applyGist(gist){try{const c=JSON.parse(gist.files[GF].content);if(c.age)$('i-age').value=c.age;if(c.income)$('i-income').value=c.income;if(c.expenses)$('i-expenses').value=c.expenses;if(c.savings)$('i-savings').value=c.savings;if(c.ret)$('i-return').value=c.ret;if(c.swr)$('i-swr').value=c.swr;if(c.iwr)$('i-iwr').value=c.iwr;if(c.upper)$('i-upper').value=c.upper;if(c.lower)$('i-lower').value=c.lower;if(c.horizon)$('i-horizon').value=c.horizon;if(c.death)$('i-death').value=c.death;if(c.mode)setMode(c.mode,false);}catch(_){}}
+  function ghFetch(p,path,o={}){return fetch(API+path,{...o,headers:{'Authorization':`token ${p}`,'Content-Type':'application/json',...(o.headers||{})}});}
+  async function findGist(p){for(let pg=1;;pg++){const r=await ghFetch(p,`/gists?per_page=100&page=${pg}`);if(!r.ok)return null;const l=await r.json();const h=l.find(g=>g.files[GF]);if(h){const f=await ghFetch(p,`/gists/${h.id}`);return f.ok?f.json():null;}if(l.length<100)return null;}}
+  function applyGist(g){try{const c=JSON.parse(g.files[GF].content);if(c.age)$('i-age').value=c.age;if(c.income)$('i-income').value=c.income;if(c.expenses)$('i-expenses').value=c.expenses;if(c.savings)$('i-savings').value=c.savings;if(c.ret)$('i-return').value=c.ret;if(c.swr)$('i-swr').value=c.swr;if(c.iwr)$('i-iwr').value=c.iwr;if(c.upper)$('i-upper').value=c.upper;if(c.lower)$('i-lower').value=c.lower;if(c.horizon)$('i-horizon').value=c.horizon;if(c.death)$('i-death').value=c.death;if(c.mode)setMode(c.mode,false);}catch(_){}}
   async function pushGist(cfg){if(!S.pat)return;setBadge('syncing…');const body={description:'FIRE Calculator — settings',public:false,files:{[GF]:{content:JSON.stringify(cfg,null,2)}}};const url=S.gistId?`/gists/${S.gistId}`:'/gists';const method=S.gistId?'PATCH':'POST';const r=await ghFetch(S.pat,url,{method,body:JSON.stringify(body)});if(r.ok){const g=await r.json();S.gistId=g.id;ls('fire_gist_id',g.id);setBadge('synced ✓','ok');}else setBadge('sync failed','bad');}
   async function pullGist(){try{setBadge('syncing…');const r=await ghFetch(S.pat,`/gists/${S.gistId}`);if(!r.ok){setBadge('');return;}applyGist(await r.json());syncSliderDisplays();calc();setBadge('synced ✓','ok');}catch(_){setBadge('');}}
 
-  // ── Persist ──
-  function persist(){const inp=getInputs();const cfg={age:inp.age,income:inp.income,expenses:inp.expenses,savings:inp.savings,ret:$('i-return').value,swr:$('i-swr').value,iwr:$('i-iwr').value,upper:$('i-upper').value,lower:$('i-lower').value,horizon:$('i-horizon').value,death:$('i-death').value,mode:MODE};ls('fire_cfg',JSON.stringify(cfg));if(S.pat)pushGist(cfg);}
+  function persist(){const i=getInputs();const c={age:i.age,income:i.income,expenses:i.expenses,savings:i.savings,ret:$('i-return').value,swr:$('i-swr').value,iwr:$('i-iwr').value,upper:$('i-upper').value,lower:$('i-lower').value,horizon:$('i-horizon').value,death:$('i-death').value,mode:MODE};ls('fire_cfg',JSON.stringify(c));if(S.pat)pushGist(c);}
 
   function ls(k,v){if(v===undefined)return localStorage.getItem(k);if(v===null)localStorage.removeItem(k);else localStorage.setItem(k,v);}
-  function setBtn(id,txt,dis){const b=$(id);b.textContent=txt;b.disabled=dis;}
-  function setBadge(txt,cls=''){const el=$('sync-badge');el.textContent=txt;el.className='sync-badge'+(cls?' '+cls:'');}
-  function fmtMoney(n){if(!isFinite(n)||isNaN(n))return '—';if(n>=1e6)return '$'+(n/1e6).toFixed(2).replace(/\.?0+$/,'')+'M';if(n>=1e3)return '$'+Math.round(n/1e3)+'K';return '$'+Math.round(n).toLocaleString();}
+  function setBtn(id,t,d){const b=$(id);b.textContent=t;b.disabled=d;}
+  function setBadge(t,c=''){const e=$('sync-badge');e.textContent=t;e.className='sync-badge'+(c?' '+c:'');}
+  function fmtMoney(n){if(!isFinite(n)||isNaN(n))return'—';if(n>=1e6)return'$'+(n/1e6).toFixed(2).replace(/\.?0+$/,'')+'M';if(n>=1e3)return'$'+Math.round(n/1e3)+'K';return'$'+Math.round(n).toLocaleString();}
 
   boot();
 </script>
