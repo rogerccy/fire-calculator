@@ -83,6 +83,12 @@
     .slider-row { display: flex; align-items: center; gap: 10px; }
     .slider-val { font-size: 0.9rem; font-weight: 300; min-width: 46px; text-align: right; font-variant-numeric: tabular-nums; }
 
+    .mode-toggle { display: flex; border: 1px solid var(--border2); border-radius: 4px; overflow: hidden; margin-bottom: 20px; }
+    .mode-btn { background: none; color: var(--muted); border: none; padding: 8px 0; font-size: 0.65rem; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; flex: 1; transition: background 0.15s, color 0.15s; }
+    .mode-btn + .mode-btn { border-left: 1px solid var(--border2); }
+    .mode-btn:hover { color: #aaa; }
+    .mode-btn.active { background: var(--border2); color: var(--text); }
+
     .result-main { font-size: 2.6rem; font-weight: 200; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; margin-bottom: 4px; line-height: 1; }
     .result-sub-row { display: flex; align-items: center; gap: 6px; margin-bottom: 20px; }
     .result-sub { font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; }
@@ -94,11 +100,13 @@
 
     .banner { padding: 12px 16px; border-radius: 4px; font-size: 0.82rem; line-height: 1.5; margin-bottom: 16px; }
     .banner.warning { background: #1f0e0e; border: 1px solid #4a2a2a; color: #bf7a7a; }
+    .banner.info    { background: #0e1a1f; border: 1px solid #2a3f4a; color: #7ab3bf; }
 
     .g-summary { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
     .g-card { background: #0f0f0f; border: 1px solid var(--border); border-radius: 4px; padding: 12px; }
     .g-card-title { font-size: 0.6rem; color: var(--muted2); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; }
     .g-card-row { display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--muted); margin-bottom: 4px; }
+    .g-card-row:last-child { margin-bottom: 0; }
     .g-card-row span:last-child { color: var(--text); font-variant-numeric: tabular-nums; }
 
     .chart-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 5px; padding: 22px 16px 10px; margin-bottom: 20px; }
@@ -130,9 +138,6 @@
     .event-raise { color: #70a870; }
     .event-normal { color: var(--muted2); }
     .depleted-row td { color: var(--red) !important; font-style: italic; }
-
-    .solve-btn { background: transparent; border: 1px solid var(--border2); color: var(--muted); font-size: 0.62rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; padding: 3px 8px; border-radius: 3px; cursor: pointer; white-space: nowrap; flex-shrink: 0; transition: color 0.15s, border-color 0.15s; font-family: inherit; }
-    .solve-btn:hover { color: var(--accent); border-color: var(--accent); }
   </style>
 </head>
 <body>
@@ -177,6 +182,12 @@
       <div class="panel">
         <div class="panel-title" id="panel-inputs-title"></div>
 
+        <div class="mode-toggle">
+          <button class="mode-btn active" id="mode-fixed"      onclick="setMode('fixed')"></button>
+          <button class="mode-btn"        id="mode-guardrails" onclick="setMode('guardrails')"></button>
+        </div>
+
+        <!-- Shared inputs -->
         <div class="input-row">
           <label class="form-label" id="label-age"></label>
           <input type="number" id="i-age" min="18" max="99" value="50">
@@ -210,44 +221,51 @@
             <span class="slider-val" id="v-death">85</span>
           </div>
         </div>
-        <div class="input-row">
-          <div class="label-row">
-            <label class="form-label" id="label-iwr"></label>
-            <button class="tip-btn" data-tip="iwr">?</button>
-          </div>
-          <div class="slider-row">
-            <input type="range" id="i-iwr" min="1" max="15" step="0.25" value="5">
-            <span class="slider-val" id="v-iwr">5%</span>
-            <button class="solve-btn" id="solve-btn"></button>
-          </div>
-        </div>
-        <div class="input-row">
-          <div class="label-row">
-            <label class="form-label" id="label-upper"></label>
-            <button class="tip-btn" data-tip="upper">?</button>
-          </div>
-          <div class="slider-row">
-            <input type="range" id="i-upper" min="10" max="40" step="5" value="20">
-            <span class="slider-val" id="v-upper">+20%</span>
+
+        <!-- Fixed annuity inputs -->
+        <div id="fixed-inputs">
+          <div class="input-row" style="margin-bottom:0">
+            <div class="label-row">
+              <label class="form-label" id="label-remain"></label>
+              <button class="tip-btn" data-tip="remain">?</button>
+            </div>
+            <div class="input-with-prefix"><span class="input-prefix">$</span>
+              <input type="number" id="i-remain" min="0" step="10000" value="0">
+            </div>
           </div>
         </div>
-        <div class="input-row">
-          <div class="label-row">
-            <label class="form-label" id="label-lower"></label>
-            <button class="tip-btn" data-tip="lower">?</button>
+
+        <!-- Guardrails inputs -->
+        <div id="guardrails-inputs" class="hidden">
+          <div class="input-row">
+            <div class="label-row">
+              <label class="form-label" id="label-iwr"></label>
+              <button class="tip-btn" data-tip="iwr">?</button>
+            </div>
+            <div class="slider-row">
+              <input type="range" id="i-iwr" min="1" max="15" step="0.25" value="5">
+              <span class="slider-val" id="v-iwr">5%</span>
+            </div>
           </div>
-          <div class="slider-row">
-            <input type="range" id="i-lower" min="10" max="40" step="5" value="20">
-            <span class="slider-val" id="v-lower">-20%</span>
+          <div class="input-row">
+            <div class="label-row">
+              <label class="form-label" id="label-upper"></label>
+              <button class="tip-btn" data-tip="upper">?</button>
+            </div>
+            <div class="slider-row">
+              <input type="range" id="i-upper" min="10" max="40" step="5" value="20">
+              <span class="slider-val" id="v-upper">+20%</span>
+            </div>
           </div>
-        </div>
-        <div class="input-row" style="margin-bottom:0">
-          <div class="label-row">
-            <label class="form-label" id="label-remain"></label>
-            <button class="tip-btn" data-tip="remain">?</button>
-          </div>
-          <div class="input-with-prefix"><span class="input-prefix">$</span>
-            <input type="number" id="i-remain" min="0" step="10000" value="0">
+          <div class="input-row" style="margin-bottom:0">
+            <div class="label-row">
+              <label class="form-label" id="label-lower"></label>
+              <button class="tip-btn" data-tip="lower">?</button>
+            </div>
+            <div class="slider-row">
+              <input type="range" id="i-lower" min="10" max="40" step="5" value="20">
+              <span class="slider-val" id="v-lower">-20%</span>
+            </div>
           </div>
         </div>
       </div>
@@ -297,112 +315,126 @@
 
   const LANG = {
     en: {
-      authSubtitle:    'Guardrails Withdrawal Planner.\nConnect GitHub to save your inputs.',
-      patLabel:        'GitHub Personal Access Token',
-      authScopeNote:   'Needs <strong style="color:#777">gist</strong> scope — <a href="https://github.com/settings/tokens/new?scopes=gist&description=fire-calculator" target="_blank" rel="noopener">create classic token →</a>',
-      connectBtn:      'Connect',
-      skipBtn:         'Skip — local only',
-      connectingBtn:   'Connecting…',
-      invalidToken:    'Invalid token — check scopes and try again.',
-      homeLink:        '← Home',
-      topLogo:         'Withdrawal Planner',
-      panelInputs:     'Your Numbers',
-      panelResults:    'Results',
-      labelAge:        'Current Age',
-      labelPortfolio:  'Portfolio / Investments',
-      labelReturn:     'Expected Annual Return',
-      labelDeath:      'Expected Death Age',
-      labelIwr:        'Initial Withdrawal Rate',
-      labelUpper:      'Upper Guardrail',
-      labelLower:      'Lower Guardrail',
-      labelRemain:     'Target Remaining at Death',
-      solveBtn:        'Solve IWR',
-      chartDecu:       'Retirement Simulation',
-      chartTable:      'Withdrawal Schedule',
-      scenStress:      'Stress Test',
-      scenBase:        'Base Case',
-      scenBaseDesc:    'Expected return — your base scenario',
-      scenStressDesc:  'Return −3% — prolonged bad market',
-      thYear:          'Year',
-      thAge:           'Age',
-      thPortfolio:     'Portfolio',
-      thRate:          'Rate (pre-adj)',
-      thWithdraw:      'Withdraw',
-      thAction:        'Action',
-      chartAdjust:     'Enter your portfolio to see the projection',
-      chartYrPfx:      'yr',
-      withdrawThisYear:'Withdraw this year',
-      monthlyLabel:    'Monthly',
-      perMonth:        '/mo',
-      horizonLabel:    'Retirement Horizon',
-      yearsLabel:      'yrs',
-      portfolioLabel:  'Starting Portfolio',
-      targetRemain:    'Target Remaining',
-      bannerEmpty:     'Enter your portfolio to see projections.',
-      gFinalPort:      'Final portfolio',
-      gCuts:           'Cuts triggered',
-      gRaises:         'Raises triggered',
-      gMinSpend:       'Min spending',
-      gDepleted:       'Depleted',
-      eventCut:        '↓ Cut 10%',
-      eventRaise:      '↑ Raise 10%',
-      syncing:         'syncing…',
-      synced:          'synced ✓',
-      syncFailed:      'sync failed',
+      authSubtitle:       'Withdrawal Planner.\nConnect GitHub to save your inputs.',
+      patLabel:           'GitHub Personal Access Token',
+      authScopeNote:      'Needs <strong style="color:#777">gist</strong> scope — <a href="https://github.com/settings/tokens/new?scopes=gist&description=withdrawal-planner" target="_blank" rel="noopener">create classic token →</a>',
+      connectBtn:         'Connect',
+      skipBtn:            'Skip — local only',
+      connectingBtn:      'Connecting…',
+      invalidToken:       'Invalid token — check scopes and try again.',
+      homeLink:           '← Home',
+      topLogo:            'Withdrawal Planner',
+      panelInputs:        'Your Numbers',
+      panelResults:       'Results',
+      modeFixed:          'Fixed Withdrawal',
+      modeGuardrails:     'Guardrails',
+      labelAge:           'Current Age',
+      labelPortfolio:     'Portfolio / Investments',
+      labelReturn:        'Expected Annual Return',
+      labelDeath:         'Expected Death Age',
+      labelRemain:        'Target Remaining at Death',
+      labelIwr:           'Initial Withdrawal Rate',
+      labelUpper:         'Upper Guardrail',
+      labelLower:         'Lower Guardrail',
+      chartDecu:          'Retirement Simulation',
+      chartTable:         'Withdrawal Schedule',
+      scenStress:         'Stress Test',
+      scenBase:           'Base Case',
+      scenBaseDesc:       'Expected return — your base scenario',
+      scenStressDesc:     'Return −3% — prolonged bad market',
+      scenStressDescFixed:'Return −3% — same withdrawal, possible early depletion',
+      thYear:             'Year',
+      thAge:              'Age',
+      thPortfolio:        'Portfolio',
+      thRate:             'Rate (pre-adj)',
+      thWithdraw:         'Withdraw',
+      thAction:           'Action',
+      thPortEnd:          'End Balance',
+      chartAdjust:        'Enter your portfolio to see the projection',
+      chartYrPfx:         'yr',
+      withdrawThisYear:   'Annual withdrawal',
+      fixedLabel:         'fixed annuity',
+      guardrailsLabel:    'initial · guardrails',
+      monthlyLabel:       'Monthly',
+      perMonth:           '/mo',
+      horizonLabel:       'Retirement Horizon',
+      yearsLabel:         'yrs',
+      portfolioLabel:     'Starting Portfolio',
+      targetRemain:       'Target Remaining',
+      bannerEmpty:        'Enter your portfolio to see projections.',
+      bannerNegativePmt:  'Target remaining exceeds what the portfolio can grow to — reduce the target or lower the return assumption.',
+      gFinalPort:         'Final portfolio',
+      gCuts:              'Cuts triggered',
+      gRaises:            'Raises triggered',
+      gMinSpend:          'Min spending',
+      gDepleted:          'Depleted',
+      gDepletedAt:        'Depleted at age',
+      eventCut:           '↓ Cut 10%',
+      eventRaise:         '↑ Raise 10%',
+      syncing:            'syncing…',
+      synced:             'synced ✓',
+      syncFailed:         'sync failed',
     },
     zh: {
-      authSubtitle:    '護欄提領規劃器。\n連結 GitHub 以儲存你的輸入資料。',
-      patLabel:        'GitHub 個人存取權杖',
-      authScopeNote:   '僅需 <strong style="color:#777">gist</strong> 權限 — <a href="https://github.com/settings/tokens/new?scopes=gist&description=fire-calculator" target="_blank" rel="noopener">建立 classic token →</a>',
-      connectBtn:      '連結',
-      skipBtn:         '略過——僅本地儲存',
-      connectingBtn:   '連結中…',
-      invalidToken:    '權杖無效——請確認權限後重試。',
-      homeLink:        '← 首頁',
-      topLogo:         '提領規劃器',
-      panelInputs:     '你的數字',
-      panelResults:    '計算結果',
-      labelAge:        '目前年齡',
-      labelPortfolio:  '投資組合',
-      labelReturn:     '預期年化報酬率',
-      labelDeath:      '預期死亡年齡',
-      labelIwr:        '初始提領率',
-      labelUpper:      '上限護欄',
-      labelLower:      '下限護欄',
-      labelRemain:     '預期留存金額',
-      solveBtn:        '自動求解',
-      chartDecu:       '退休模擬（提領階段）',
-      chartTable:      '提領排程',
-      scenStress:      '壓力測試',
-      scenBase:        '基本情境',
-      scenBaseDesc:    '使用預期報酬率——標準情境',
-      scenStressDesc:  '報酬率降低 3%——模擬長期熊市',
-      thYear:          '年份',
-      thAge:           '年齡',
-      thPortfolio:     '投資組合',
-      thRate:          '提領率（調整前）',
-      thWithdraw:      '提領金額',
-      thAction:        '調整動作',
-      chartAdjust:     '請輸入投資組合以查看預測',
-      chartYrPfx:      '第',
-      withdrawThisYear:'本年提領金額',
-      monthlyLabel:    '每月',
-      perMonth:        '/月',
-      horizonLabel:    '退休期間',
-      yearsLabel:      '年',
-      portfolioLabel:  '起始投資組合',
-      targetRemain:    '目標留存金額',
-      bannerEmpty:     '請輸入投資組合以查看預測。',
-      gFinalPort:      '最終投資組合',
-      gCuts:           '削減次數',
-      gRaises:         '提高次數',
-      gMinSpend:       '最低支出',
-      gDepleted:       '已耗盡',
-      eventCut:        '↓ 削減 10%',
-      eventRaise:      '↑ 提高 10%',
-      syncing:         '同步中…',
-      synced:          '已同步 ✓',
-      syncFailed:      '同步失敗',
+      authSubtitle:       '提領規劃器。\n連結 GitHub 以儲存你的輸入資料。',
+      patLabel:           'GitHub 個人存取權杖',
+      authScopeNote:      '僅需 <strong style="color:#777">gist</strong> 權限 — <a href="https://github.com/settings/tokens/new?scopes=gist&description=withdrawal-planner" target="_blank" rel="noopener">建立 classic token →</a>',
+      connectBtn:         '連結',
+      skipBtn:            '略過——僅本地儲存',
+      connectingBtn:      '連結中…',
+      invalidToken:       '權杖無效——請確認權限後重試。',
+      homeLink:           '← 首頁',
+      topLogo:            '提領規劃器',
+      panelInputs:        '你的數字',
+      panelResults:       '計算結果',
+      modeFixed:          '固定年金',
+      modeGuardrails:     '護欄策略',
+      labelAge:           '目前年齡',
+      labelPortfolio:     '投資組合',
+      labelReturn:        '預期年化報酬率',
+      labelDeath:         '預期死亡年齡',
+      labelRemain:        '預期留存金額',
+      labelIwr:           '初始提領率',
+      labelUpper:         '上限護欄',
+      labelLower:         '下限護欄',
+      chartDecu:          '退休模擬（提領階段）',
+      chartTable:         '提領排程',
+      scenStress:         '壓力測試',
+      scenBase:           '基本情境',
+      scenBaseDesc:       '使用預期報酬率——標準情境',
+      scenStressDesc:     '報酬率降低 3%——模擬長期熊市',
+      scenStressDescFixed:'報酬率降低 3%——相同提領，可能提早耗盡',
+      thYear:             '年份',
+      thAge:              '年齡',
+      thPortfolio:        '投資組合',
+      thRate:             '提領率（調整前）',
+      thWithdraw:         '提領金額',
+      thAction:           '調整動作',
+      thPortEnd:          '期末資產',
+      chartAdjust:        '請輸入投資組合以查看預測',
+      chartYrPfx:         '第',
+      withdrawThisYear:   '年提領金額',
+      fixedLabel:         '固定年金',
+      guardrailsLabel:    '初始提領 · 護欄策略',
+      monthlyLabel:       '每月',
+      perMonth:           '/月',
+      horizonLabel:       '退休期間',
+      yearsLabel:         '年',
+      portfolioLabel:     '起始投資組合',
+      targetRemain:       '目標留存金額',
+      bannerEmpty:        '請輸入投資組合以查看預測。',
+      bannerNegativePmt:  '目標留存金額超過投資組合的成長上限——請降低目標或調整報酬率假設。',
+      gFinalPort:         '最終投資組合',
+      gCuts:              '削減次數',
+      gRaises:            '提高次數',
+      gMinSpend:          '最低支出',
+      gDepleted:          '已耗盡',
+      gDepletedAt:        '耗盡年齡',
+      eventCut:           '↓ 削減 10%',
+      eventRaise:         '↑ 提高 10%',
+      syncing:            '同步中…',
+      synced:             '已同步 ✓',
+      syncFailed:         '同步失敗',
     }
   };
 
@@ -417,25 +449,25 @@
       en: { title: 'Expected Annual Return (Real)', body: '"Real" means after subtracting inflation (~3%). The stock market returns ~10% nominally, so ~7% in real terms. Using real returns keeps everything in today\'s dollars.' },
       zh: { title: '預期年化報酬率（實質）', body: '「實質」是指扣除通膨（約3%）後的報酬。股市名目報酬約10%，實質約7%。使用實質報酬率可讓所有數字維持在今日幣值。' }
     },
+    death: {
+      en: { title: 'Expected Death Age', body: 'The age at which your portfolio should reach the target remaining balance. Match this with your Life Clock app setting for consistency.' },
+      zh: { title: '預期死亡年齡', body: '投資組合應達到目標留存金額的年齡。建議與 Life Clock 的設定保持一致。' }
+    },
+    remain: {
+      en: { title: 'Target Remaining at Death', body: 'The portfolio balance you want left at your expected death age. $0 = Die With Zero. Set higher to leave a bequest or safety buffer. The fixed annual withdrawal is calculated to hit this target exactly.' },
+      zh: { title: '預期留存金額', body: '在預期死亡年齡時，希望投資組合剩餘的金額。$0 為歸零而終。設為較高金額可作為遺產或安全緩衝。固定年提領金額會精確計算以達到此目標。' }
+    },
     iwr: {
-      en: { title: 'Initial Withdrawal Rate', body: 'The percentage of your portfolio you withdraw in year one. Higher rates mean more spending now but risk depleting sooner. Use "Solve IWR" to auto-calculate the rate that hits your target remaining balance at death.' },
-      zh: { title: '初始提領率', body: '退休第一年從投資組合提取的比例。比例越高，當下支出越多但可能提早耗盡。使用「自動求解」可計算出在預期死亡年齡達到目標留存金額的提領率。' }
+      en: { title: 'Initial Withdrawal Rate', body: 'The percentage of your portfolio you withdraw in year one. The guardrails strategy then adjusts spending up or down each year based on how your portfolio performs relative to this starting rate.' },
+      zh: { title: '初始提領率', body: '退休第一年從投資組合提取的比例。護欄策略會根據投資組合表現，每年動態上調或下調此比例。' }
     },
     upper: {
-      en: { title: 'Upper Guardrail', body: 'If your portfolio drops and your withdrawal rate rises above IWR × (1 + upper%), cut spending by 10%. Example: IWR 5%, upper +20% → triggers at 6%. Protects the portfolio during prolonged downturns.' },
+      en: { title: 'Upper Guardrail', body: 'If your portfolio drops and your withdrawal rate rises above IWR × (1 + upper%), cut spending by 10%. Example: IWR 5%, upper +20% → triggers at 6%.' },
       zh: { title: '上限護欄', body: '若投資組合下跌導致提領率超過 IWR × (1 + 上限%)，削減支出 10%。例如：IWR 5%，上限 +20% → 在 6% 時觸發。' }
     },
     lower: {
-      en: { title: 'Lower Guardrail', body: 'If your portfolio grows and your withdrawal rate falls below IWR × (1 − lower%), raise spending by 10%. Example: IWR 5%, lower −20% → triggers at 4%. Lets you enjoy good market performance.' },
+      en: { title: 'Lower Guardrail', body: 'If your portfolio grows and your withdrawal rate falls below IWR × (1 − lower%), raise spending by 10%. Example: IWR 5%, lower −20% → triggers at 4%.' },
       zh: { title: '下限護欄', body: '若投資組合增值導致提領率低於 IWR × (1 − 下限%)，提高支出 10%。例如：IWR 5%，下限 −20% → 在 4% 時觸發。' }
-    },
-    death: {
-      en: { title: 'Expected Death Age', body: 'The age at which your portfolio should reach the target remaining balance. Match this with your Memento Mori app setting for consistency.' },
-      zh: { title: '預期死亡年齡', body: '投資組合應達到目標留存金額的年齡。建議與 Memento Mori 的設定保持一致。' }
-    },
-    remain: {
-      en: { title: 'Target Remaining at Death', body: 'The portfolio balance you want left when you reach your expected death age. Set to $0 to fully deplete (Die With Zero). Set higher to leave a bequest or safety buffer.' },
-      zh: { title: '預期留存金額', body: '在預期死亡年齡時，希望投資組合剩餘的金額。設為 $0 即為完全耗盡（歸零而終）；設為較高金額可作為遺產或安全緩衝。' }
     },
   };
 
@@ -454,23 +486,21 @@
 
     $('panel-inputs-title').textContent  = t('panelInputs');
     $('panel-results-title').textContent = t('panelResults');
+    $('mode-fixed').textContent      = t('modeFixed');
+    $('mode-guardrails').textContent = t('modeGuardrails');
     $('label-age').textContent       = t('labelAge');
     $('label-portfolio').textContent = t('labelPortfolio');
     $('label-return').textContent    = t('labelReturn');
     $('label-death').textContent     = t('labelDeath');
+    $('label-remain').textContent    = t('labelRemain');
     $('label-iwr').textContent       = t('labelIwr');
     $('label-upper').textContent     = t('labelUpper');
     $('label-lower').textContent     = t('labelLower');
-    $('label-remain').textContent    = t('labelRemain');
-    $('solve-btn').textContent       = t('solveBtn');
 
     $('chart-decu-title').textContent  = t('chartDecu');
     $('chart-table-title').textContent = t('chartTable');
     $('scen-stress').textContent = t('scenStress');
     $('scen-base').textContent   = t('scenBase');
-
-    $('table-head-row').innerHTML = ['thYear','thAge','thPortfolio','thRate','thWithdraw','thAction']
-      .map(k => `<th>${t(k)}</th>`).join('');
 
     syncSliderDisplays();
     if (!$('s-main').classList.contains('hidden')) calc();
@@ -485,10 +515,8 @@
   function openTip(btn, key) {
     const tip = TIPS[key]; if (!tip) return;
     const data = tip[S.lang] || tip.en;
-    tipTitle.textContent = data.title;
-    tipBody.textContent  = data.body;
-    tipEl.classList.remove('visible');
-    tipEl.style.left = '-9999px'; tipEl.style.top = '-9999px';
+    tipTitle.textContent = data.title; tipBody.textContent = data.body;
+    tipEl.classList.remove('visible'); tipEl.style.left = '-9999px'; tipEl.style.top = '-9999px';
     tipEl.classList.add('visible');
     const br = btn.getBoundingClientRect(), tw = tipEl.offsetWidth, th = tipEl.offsetHeight;
     const vw = window.innerWidth, vh = window.innerHeight, pad = 8;
@@ -498,9 +526,7 @@
     tipEl.style.left = left + 'px'; tipEl.style.top = top + 'px';
     activeTip = btn;
   }
-
   function closeTip() { tipEl.classList.remove('visible'); activeTip = null; }
-
   document.addEventListener('click', e => {
     const btn = e.target.closest('.tip-btn');
     if (btn) { e.stopPropagation(); if (activeTip === btn) { closeTip(); return; } openTip(btn, btn.dataset.tip); }
@@ -509,7 +535,7 @@
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closeTip(); });
 
   const S = { pat: null, gistId: null, local: false, lang: 'en' };
-  let saveTimer = null, tableScen = 'stress';
+  let saveTimer = null, tableScen = 'stress', MODE = 'fixed';
   let lastBaseRows = [], lastStressRows = [];
 
   function boot() {
@@ -517,6 +543,7 @@
     S.gistId = ls('fire_gist_id');
     S.local  = ls('fire_local') === '1';
     S.lang   = ls('fire_lang') || 'en';
+    MODE     = ls('fire_mode') || 'fixed';
 
     const saved = ls('fire_cfg');
     if (saved) {
@@ -533,6 +560,7 @@
       } catch(_) {}
     }
 
+    applyMode(MODE, false);
     applyLang();
     if (S.pat || S.local) { show('main'); calc(); if (S.pat && S.gistId) pullGist(); }
     else show('auth');
@@ -542,6 +570,18 @@
     ['auth','main'].forEach(n => $('s-'+n).classList.add('hidden'));
     $('s-'+name).classList.remove('hidden');
   }
+
+  function applyMode(m, doCalc=true) {
+    MODE = m;
+    $('mode-fixed').classList.toggle('active', m === 'fixed');
+    $('mode-guardrails').classList.toggle('active', m === 'guardrails');
+    $('fixed-inputs').classList.toggle('hidden', m !== 'fixed');
+    $('guardrails-inputs').classList.toggle('hidden', m !== 'guardrails');
+    ls('fire_mode', m);
+    if (doCalc) calc();
+  }
+
+  function setMode(m) { applyMode(m, true); }
 
   $('connect-btn').onclick = async () => {
     const pat = $('pat').value.trim(); if (!pat) return;
@@ -561,17 +601,13 @@
 
   $('scen-stress').onclick = () => {
     tableScen = 'stress';
-    $('scen-stress').classList.add('active');
-    $('scen-base').classList.remove('active');
-    renderTable(lastStressRows);
-    updateScenDesc(getInputs());
+    $('scen-stress').classList.add('active'); $('scen-base').classList.remove('active');
+    renderTable(lastStressRows); updateScenDesc(getInputs());
   };
   $('scen-base').onclick = () => {
     tableScen = 'base';
-    $('scen-base').classList.add('active');
-    $('scen-stress').classList.remove('active');
-    renderTable(lastBaseRows);
-    updateScenDesc(getInputs());
+    $('scen-base').classList.add('active'); $('scen-stress').classList.remove('active');
+    renderTable(lastBaseRows); updateScenDesc(getInputs());
   };
 
   function syncSliderDisplays() {
@@ -601,6 +637,30 @@
     };
   }
 
+  // ── Fixed annuity simulation ──────────────────────
+  function calcPMT(pv, r, n, remain) {
+    if (n <= 0) return 0;
+    if (r === 0) return (pv - remain) / n;
+    const growth = Math.pow(1 + r, n);
+    return (pv * growth - remain) * r / (growth - 1);
+  }
+
+  function simulateFixed(pv, pmt, ret, horizon, sa) {
+    const rows = [];
+    let port = pv;
+    rows.push({year:0, age:sa, portfolioStart:port, withdraw:0, portfolioEnd:port});
+    for (let y = 1; y <= horizon; y++) {
+      const ps = port * (1 + ret);
+      const wd = Math.min(Math.max(0, pmt), ps);
+      const pe = Math.max(0, ps - wd);
+      rows.push({year:y, age:sa+y, portfolioStart:ps, withdraw:wd, portfolioEnd:pe});
+      port = pe;
+      if (port <= 0) break;
+    }
+    return rows;
+  }
+
+  // ── Guardrails simulation ─────────────────────────
   function simulateDecumulation(sp, is, ret, iwr, up, lo, h, sa) {
     const rows = [];
     let port = sp, spend = is;
@@ -619,9 +679,9 @@
     return rows;
   }
 
+  // ── Main dispatch ─────────────────────────────────
   function calc() {
     const inp = getInputs();
-
     if (inp.savings <= 0) {
       $('results-content').innerHTML = `<div class="banner warning">${t('bannerEmpty')}</div>`;
       $('decu-chart-wrap').classList.remove('hidden');
@@ -629,7 +689,39 @@
       $('table-wrap').classList.add('hidden');
       return;
     }
+    if (MODE === 'fixed') calcFixed(inp);
+    else calcGuardrails(inp);
+  }
 
+  function calcFixed(inp) {
+    const horizon = Math.max(1, Math.round(inp.deathAge - inp.age));
+    const pmt = calcPMT(inp.savings, inp.ret, horizon, inp.remain);
+
+    if (pmt <= 0) {
+      $('results-content').innerHTML = `<div class="banner warning">${t('bannerNegativePmt')}</div>`;
+      $('decu-chart-wrap').classList.add('hidden');
+      $('table-wrap').classList.add('hidden');
+      return;
+    }
+
+    const sr = Math.max(0, inp.ret - 0.03);
+    lastBaseRows   = simulateFixed(inp.savings, pmt, inp.ret, horizon, inp.age);
+    lastStressRows = simulateFixed(inp.savings, pmt, sr,      horizon, inp.age);
+
+    renderFixedResults(inp, pmt, horizon);
+    renderFixedSummary(inp, lastBaseRows, lastStressRows);
+    drawDecuChart(lastBaseRows, lastStressRows, inp.savings);
+    updateTableHeaders();
+    renderFixedTable(tableScen === 'base' ? lastBaseRows : lastStressRows);
+    updateScenDesc(inp);
+
+    $('leg-base-label').textContent   = `${t('scenBase')} (${(inp.ret*100).toFixed(1)}%)`;
+    $('leg-stress-label').textContent = `${t('scenStress')} (${(sr*100).toFixed(1)}%)`;
+    $('decu-chart-wrap').classList.remove('hidden');
+    $('table-wrap').classList.remove('hidden');
+  }
+
+  function calcGuardrails(inp) {
     const horizon = Math.max(1, Math.round(inp.deathAge - inp.age));
     const initialWithdraw = inp.savings * inp.iwr;
     const sr = Math.max(0, inp.ret - 0.03);
@@ -637,34 +729,73 @@
     lastBaseRows   = simulateDecumulation(inp.savings, initialWithdraw, inp.ret, inp.iwr, inp.upper, inp.lower, horizon, inp.age);
     lastStressRows = simulateDecumulation(inp.savings, initialWithdraw, sr,      inp.iwr, inp.upper, inp.lower, horizon, inp.age);
 
-    renderResults(inp, initialWithdraw, horizon);
+    renderGuardrailsResults(inp, initialWithdraw, horizon);
     renderGuardrailsSummary(inp, lastBaseRows, lastStressRows);
     drawDecuChart(lastBaseRows, lastStressRows, inp.savings);
+    updateTableHeaders();
     renderTable(tableScen === 'base' ? lastBaseRows : lastStressRows);
     updateScenDesc(inp);
 
     $('leg-base-label').textContent   = `${t('scenBase')} (${(inp.ret*100).toFixed(1)}%)`;
     $('leg-stress-label').textContent = `${t('scenStress')} (${(sr*100).toFixed(1)}%)`;
-
     $('decu-chart-wrap').classList.remove('hidden');
     $('table-wrap').classList.remove('hidden');
   }
 
-  function renderResults(inp, initialWithdraw, horizon) {
-    const monthly = initialWithdraw / 12;
-    const rateLabel = (inp.iwr * 100).toFixed(2);
-
-    let html = `<div class="result-main">${fmtMoney(initialWithdraw)}</div>
-      <div class="result-sub-row">
-        <span class="result-sub">${t('withdrawThisYear')} &mdash; ${rateLabel}% IWR</span>
-      </div>`;
+  // ── Render: Fixed ─────────────────────────────────
+  function renderFixedResults(inp, pmt, horizon) {
+    const monthly = pmt / 12;
+    let html = `<div class="result-main">${fmtMoney(pmt)}</div>
+      <div class="result-sub-row"><span class="result-sub">${t('withdrawThisYear')} &mdash; ${t('fixedLabel')}</span></div>`;
     html += `<div class="metrics">`;
     html += metric(t('monthlyLabel'), fmtMoney(monthly) + t('perMonth'));
     html += metric(t('horizonLabel'), `${horizon} ${t('yearsLabel')}`);
     html += metric(t('portfolioLabel'), fmtMoney(inp.savings));
     if (inp.remain > 0) html += metric(t('targetRemain'), fmtMoney(inp.remain));
-    html += `</div>`;
-    html += `<div id="mode-extra"></div>`;
+    html += `</div><div id="mode-extra"></div>`;
+    $('results-content').innerHTML = html;
+  }
+
+  function renderFixedSummary(inp, baseRows, stressRows) {
+    const el = $('mode-extra'); if (!el) return;
+    const baseLast   = baseRows[baseRows.length-1];
+    const stressLast = stressRows[stressRows.length-1];
+    const stressDep  = stressLast.portfolioEnd <= 0;
+    const sr = Math.max(0, inp.ret - 0.03);
+    const stressVal  = stressDep
+      ? `<span style="color:#c07070">${t('gDepletedAt')} ${stressLast.age}</span>`
+      : fmtMoney(stressLast.portfolioEnd);
+    el.innerHTML = `<div class="g-summary">
+      <div class="g-card"><div class="g-card-title">${t('scenBase')} (${(inp.ret*100).toFixed(1)}%)</div>
+        <div class="g-card-row"><span>${t('gFinalPort')}</span><span>${fmtMoney(baseLast.portfolioEnd)}</span></div></div>
+      <div class="g-card"><div class="g-card-title">${t('scenStress')} (${(sr*100).toFixed(1)}%)</div>
+        <div class="g-card-row"><span>${t('gFinalPort')}</span><span>${stressVal}</span></div></div>
+    </div>`;
+  }
+
+  function renderFixedTable(rows) {
+    $('table-body').innerHTML = rows.filter(r => r.year > 0).map(r => {
+      const dep = r.portfolioEnd <= 0;
+      return `<tr class="${dep?'depleted-row':''}">
+        <td>${r.year}</td><td>${r.age}</td>
+        <td>${fmtMoney(r.portfolioStart)}</td>
+        <td>${fmtMoney(r.withdraw)}</td>
+        <td>${dep ? `<span style="color:#c07070">${t('gDepleted')}</span>` : fmtMoney(r.portfolioEnd)}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  // ── Render: Guardrails ────────────────────────────
+  function renderGuardrailsResults(inp, initialWithdraw, horizon) {
+    const monthly = initialWithdraw / 12;
+    const rateLabel = (inp.iwr * 100).toFixed(2);
+    let html = `<div class="result-main">${fmtMoney(initialWithdraw)}</div>
+      <div class="result-sub-row"><span class="result-sub">${t('withdrawThisYear')} &mdash; ${rateLabel}% ${t('guardrailsLabel')}</span></div>`;
+    html += `<div class="metrics">`;
+    html += metric(t('monthlyLabel'), fmtMoney(monthly) + t('perMonth'));
+    html += metric(t('horizonLabel'), `${horizon} ${t('yearsLabel')}`);
+    html += metric(t('portfolioLabel'), fmtMoney(inp.savings));
+    html += `</div><div id="mode-extra"></div>`;
     $('results-content').innerHTML = html;
   }
 
@@ -672,13 +803,7 @@
     const el = $('mode-extra'); if (!el) return;
     const sum = rows => {
       const last = rows[rows.length-1];
-      return {
-        finalPort: last.portfolioEnd,
-        cuts:   rows.filter(r => r.event==='cut').length,
-        raises: rows.filter(r => r.event==='raise').length,
-        depleted: last.portfolioEnd <= 0,
-        minSpend: Math.min(...rows.filter(r => r.year>0).map(r => r.withdraw)),
-      };
+      return { finalPort: last.portfolioEnd, cuts: rows.filter(r=>r.event==='cut').length, raises: rows.filter(r=>r.event==='raise').length, depleted: last.portfolioEnd<=0, minSpend: Math.min(...rows.filter(r=>r.year>0).map(r=>r.withdraw)) };
     };
     const b = sum(baseRows), s = sum(stressRows);
     const sr = Math.max(0, inp.ret - 0.03);
@@ -694,17 +819,37 @@
     </div>`;
   }
 
+  function renderTable(rows) {
+    $('table-body').innerHTML = rows.filter(r => r.year>0).map(r => {
+      const dep = r.portfolioEnd<=0;
+      const rc  = dep?'depleted-row':r.event==='cut'?'row-cut':r.event==='raise'?'row-raise':'';
+      const act = r.event==='cut'   ? `<span class="event-cut">${t('eventCut')}</span>`
+                : r.event==='raise' ? `<span class="event-raise">${t('eventRaise')}</span>`
+                :                    `<span class="event-normal">—</span>`;
+      return `<tr class="${rc}"><td>${r.year}</td><td>${r.age}</td><td>${fmtMoney(r.portfolioStart)}</td><td>${r.currentRate.toFixed(1)}%</td><td>${fmtMoney(r.withdraw)}</td><td>${dep?`<span style="color:#c07070">${t('gDepleted')}</span>`:act}</td></tr>`;
+    }).join('');
+  }
+
+  function updateTableHeaders() {
+    const keys = MODE === 'fixed'
+      ? ['thYear','thAge','thPortfolio','thWithdraw','thPortEnd']
+      : ['thYear','thAge','thPortfolio','thRate','thWithdraw','thAction'];
+    $('table-head-row').innerHTML = keys.map(k => `<th>${t(k)}</th>`).join('');
+  }
+
   function updateScenDesc(inp) {
     const sr = Math.max(0, inp.ret - 0.03);
+    const stressKey = MODE === 'fixed' ? 'scenStressDescFixed' : 'scenStressDesc';
     $('scen-desc').textContent = tableScen === 'base'
       ? `${t('scenBaseDesc')} — ${(inp.ret*100).toFixed(1)}%`
-      : `${t('scenStressDesc')} — ${(sr*100).toFixed(1)}%`;
+      : `${t(stressKey)} — ${(sr*100).toFixed(1)}%`;
   }
 
   function metric(label, val) {
     return `<div class="metric-row"><span class="metric-label">${label}</span><span class="metric-val">${val}</span></div>`;
   }
 
+  // ── Chart ─────────────────────────────────────────
   const DCW=800,DCH=200,DPL=64,DPR=24,DPT=14,DPB=36,DIW=DCW-DPL-DPR,DIH=DCH-DPT-DPB;
 
   function drawDecuChart(br, sr, sp) {
@@ -719,7 +864,7 @@
     const bl = br.map(r=>`${xS(r.year)},${yS(r.portfolioEnd??r.portfolioStart)}`).join(' ');
     const sl = sr.map(r=>`${xS(r.year)},${yS(r.portfolioEnd??r.portfolioStart)}`).join(' ');
     let ed = '';
-    sr.forEach(r => { if (r.event==='cut'||r.event==='raise') { const col=r.event==='cut'?'#c07070':'#70a870'; ed+=`<circle cx="${xS(r.year)}" cy="${yS(r.portfolioEnd)}" r="4" fill="${col}" opacity="0.85"/>`; } });
+    if (MODE === 'guardrails') sr.forEach(r => { if (r.event==='cut'||r.event==='raise') { const col=r.event==='cut'?'#c07070':'#70a870'; ed+=`<circle cx="${xS(r.year)}" cy="${yS(r.portfolioEnd)}" r="4" fill="${col}" opacity="0.85"/>`; } });
     $('decu-svg').innerHTML = `<clipPath id="dc"><rect x="${DPL}" y="${DPT}" width="${DIW}" height="${DIH}"/></clipPath>${gl}${yl}${xl}<g clip-path="url(#dc)"><polyline points="${bl}" fill="none" stroke="#e8e8e8" stroke-width="1.5" stroke-linejoin="round" opacity="0.5"/><polyline points="${sl}" fill="none" stroke="#c8a96e" stroke-width="1.5" stroke-linejoin="round"/>${ed}</g><line x1="${DPL}" y1="${DPT}" x2="${DPL}" y2="${DPT+DIH}" stroke="#2a2a2a" stroke-width="1"/><line x1="${DPL}" y1="${DPT+DIH}" x2="${DPL+DIW}" y2="${DPT+DIH}" stroke="#2a2a2a" stroke-width="1"/>`;
 
     const svg = $('decu-svg');
@@ -741,8 +886,8 @@
       if (bRow) h += `<circle cx="${cx}" cy="${yS(bRow.portfolioEnd??bRow.portfolioStart)}" r="4" fill="#e8e8e8" stroke="#0d0d0d" stroke-width="1.5"/>`;
       if (sRow) h += `<circle cx="${cx}" cy="${yS(sRow.portfolioEnd??sRow.portfolioStart)}" r="4" fill="#c8a96e" stroke="#0d0d0d" stroke-width="1.5"/>`;
       const age  = bRow?.age ?? sRow?.age ?? (br[0].age + yr);
-      const bVal = bRow ? fmtMoney(bRow.portfolioEnd??bRow.portfolioStart) : t('gDepleted');
-      const sVal = sRow ? fmtMoney(sRow.portfolioEnd??sRow.portfolioStart) : t('gDepleted');
+      const bVal = bRow  ? fmtMoney(bRow.portfolioEnd??bRow.portfolioStart)  : t('gDepleted');
+      const sVal = sRow  ? fmtMoney(sRow.portfolioEnd??sRow.portfolioStart)  : t('gDepleted');
       const yrTxt = S.lang === 'zh' ? `${t('chartYrPfx')} ${yr} 年 · 年齡 ${age}` : `yr ${yr}  ·  age ${age}`;
       const tw = 132, th = 58;
       let tx = cx + 10; if (tx + tw > DPL + DIW - 4) tx = cx - tw - 10;
@@ -758,49 +903,18 @@
     ov.addEventListener('mouseleave', () => { hg.innerHTML = ''; });
   }
 
-  function renderTable(rows) {
-    $('table-body').innerHTML = rows.filter(r => r.year>0).map(r => {
-      const dep = r.portfolioEnd<=0;
-      const rc  = dep?'depleted-row':r.event==='cut'?'row-cut':r.event==='raise'?'row-raise':'';
-      const act = r.event==='cut'   ? `<span class="event-cut">${t('eventCut')}</span>`
-                : r.event==='raise' ? `<span class="event-raise">${t('eventRaise')}</span>`
-                :                    `<span class="event-normal">—</span>`;
-      return `<tr class="${rc}"><td>${r.year}</td><td>${r.age}</td><td>${fmtMoney(r.portfolioStart)}</td><td>${r.currentRate.toFixed(1)}%</td><td>${fmtMoney(r.withdraw)}</td><td>${dep?`<span style="color:#c07070">${t('gDepleted')}</span>`:act}</td></tr>`;
-    }).join('');
-  }
-
   function drawChartEmpty(id) {
     $(id).innerHTML = `<text x="400" y="100" text-anchor="middle" fill="#888" font-size="13" font-family="sans-serif">${t('chartAdjust')}</text>`;
   }
 
-  function solveIWR() {
-    const inp = getInputs();
-    if (inp.savings <= 0 || inp.deathAge <= inp.age) return;
-    const horizon = Math.max(1, Math.round(inp.deathAge - inp.age));
-    let lo = 0.005, hi = 0.60;
-    for (let i = 0; i < 60; i++) {
-      const mid = (lo + hi) / 2;
-      const rows = simulateDecumulation(inp.savings, inp.savings * mid, inp.ret, mid, inp.upper, inp.lower, horizon, inp.age);
-      const finalPort = rows[rows.length-1].portfolioEnd;
-      if (finalPort > inp.remain) lo = mid;
-      else hi = mid;
-    }
-    const solved = Math.round((lo + hi) / 2 * 400) / 400;
-    $('i-iwr').value = (solved * 100).toFixed(2);
-    syncSliderDisplays();
-    calc();
-    scheduleSave();
-  }
-
-  $('solve-btn').onclick = solveIWR;
-
+  // ── Gist / Persist ────────────────────────────────
   function ghFetch(p,path,o={}){return fetch(API+path,{...o,headers:{'Authorization':`token ${p}`,'Content-Type':'application/json',...(o.headers||{})}});}
   async function findGist(p){for(let pg=1;;pg++){const r=await ghFetch(p,`/gists?per_page=100&page=${pg}`);if(!r.ok)return null;const l=await r.json();const h=l.find(g=>g.files[GF]);if(h){const f=await ghFetch(p,`/gists/${h.id}`);return f.ok?f.json():null;}if(l.length<100)return null;}}
-  function applyGist(g){try{const c=JSON.parse(g.files[GF].content);if(c.age)$('i-age').value=c.age;if(c.savings)$('i-savings').value=c.savings;if(c.ret)$('i-return').value=c.ret;if(c.iwr)$('i-iwr').value=c.iwr;if(c.upper)$('i-upper').value=c.upper;if(c.lower)$('i-lower').value=c.lower;if(c.death)$('i-death').value=c.death;if(c.remain!==undefined)$('i-remain').value=c.remain;}catch(_){}}
-  async function pushGist(cfg){if(!S.pat)return;setBadge(t('syncing'));const body={description:'FIRE Calculator — settings',public:false,files:{[GF]:{content:JSON.stringify(cfg,null,2)}}};const url=S.gistId?`/gists/${S.gistId}`:'/gists';const method=S.gistId?'PATCH':'POST';const r=await ghFetch(S.pat,url,{method,body:JSON.stringify(body)});if(r.ok){const g=await r.json();S.gistId=g.id;ls('fire_gist_id',g.id);setBadge(t('synced'),'ok');}else setBadge(t('syncFailed'),'bad');}
+  function applyGist(g){try{const c=JSON.parse(g.files[GF].content);if(c.age)$('i-age').value=c.age;if(c.savings)$('i-savings').value=c.savings;if(c.ret)$('i-return').value=c.ret;if(c.iwr)$('i-iwr').value=c.iwr;if(c.upper)$('i-upper').value=c.upper;if(c.lower)$('i-lower').value=c.lower;if(c.death)$('i-death').value=c.death;if(c.remain!==undefined)$('i-remain').value=c.remain;if(c.mode)applyMode(c.mode,false);}catch(_){}}
+  async function pushGist(cfg){if(!S.pat)return;setBadge(t('syncing'));const body={description:'Withdrawal Planner — settings',public:false,files:{[GF]:{content:JSON.stringify(cfg,null,2)}}};const url=S.gistId?`/gists/${S.gistId}`:'/gists';const method=S.gistId?'PATCH':'POST';const r=await ghFetch(S.pat,url,{method,body:JSON.stringify(body)});if(r.ok){const g=await r.json();S.gistId=g.id;ls('fire_gist_id',g.id);setBadge(t('synced'),'ok');}else setBadge(t('syncFailed'),'bad');}
   async function pullGist(){try{setBadge(t('syncing'));const r=await ghFetch(S.pat,`/gists/${S.gistId}`);if(!r.ok){setBadge('');return;}applyGist(await r.json());syncSliderDisplays();calc();setBadge(t('synced'),'ok');}catch(_){setBadge('');}}
 
-  function persist(){const i=getInputs();const c={age:i.age,savings:i.savings,ret:$('i-return').value,iwr:$('i-iwr').value,upper:$('i-upper').value,lower:$('i-lower').value,death:$('i-death').value,remain:i.remain};ls('fire_cfg',JSON.stringify(c));if(S.pat)pushGist(c);}
+  function persist(){const i=getInputs();const c={age:i.age,savings:i.savings,ret:$('i-return').value,iwr:$('i-iwr').value,upper:$('i-upper').value,lower:$('i-lower').value,death:$('i-death').value,remain:i.remain,mode:MODE};ls('fire_cfg',JSON.stringify(c));if(S.pat)pushGist(c);}
   function ls(k,v){if(v===undefined)return localStorage.getItem(k);if(v===null)localStorage.removeItem(k);else localStorage.setItem(k,v);}
   function setBadge(txt,cls=''){const e=$('sync-badge');e.textContent=txt;e.className='sync-badge'+(cls?' '+cls:'');}
   function fmtMoney(n){if(!isFinite(n)||isNaN(n))return'—';if(n>=1e6)return'$'+(n/1e6).toFixed(2).replace(/\.?0+$/,'')+'M';if(n>=1e4)return'$'+Math.round(n/1e3)+'K';if(n>=1e3)return'$'+(n/1e3).toFixed(1).replace(/\.0$/,'')+'K';return'$'+Math.round(n).toLocaleString();}
