@@ -118,7 +118,7 @@
     .scen-btn:hover { color: #aaa; border-color: #444; }
     .scen-btn.active { background: var(--border2); color: var(--text); border-color: var(--border2); }
     .scen-desc { font-size: 0.72rem; color: var(--muted2); line-height: 1.5; padding: 0 6px; margin-bottom: 14px; }
-    .table-scroll { overflow-y: auto; max-height: 320px; border: 1px solid var(--border); border-radius: 4px; }
+    .table-scroll { border: 1px solid var(--border); border-radius: 4px; }
     .w-table { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
     .w-table th { position: sticky; top: 0; background: #111; padding: 9px 12px; text-align: left; font-size: 0.62rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; border-bottom: 1px solid var(--border2); }
     .w-table td { padding: 8px 12px; border-bottom: 1px solid var(--border); font-variant-numeric: tabular-nums; color: #bbb; }
@@ -721,6 +721,41 @@
     let ed = '';
     sr.forEach(r => { if (r.event==='cut'||r.event==='raise') { const col=r.event==='cut'?'#c07070':'#70a870'; ed+=`<circle cx="${xS(r.year)}" cy="${yS(r.portfolioEnd)}" r="4" fill="${col}" opacity="0.85"/>`; } });
     $('decu-svg').innerHTML = `<clipPath id="dc"><rect x="${DPL}" y="${DPT}" width="${DIW}" height="${DIH}"/></clipPath>${gl}${yl}${xl}<g clip-path="url(#dc)"><polyline points="${bl}" fill="none" stroke="#e8e8e8" stroke-width="1.5" stroke-linejoin="round" opacity="0.5"/><polyline points="${sl}" fill="none" stroke="#c8a96e" stroke-width="1.5" stroke-linejoin="round"/>${ed}</g><line x1="${DPL}" y1="${DPT}" x2="${DPL}" y2="${DPT+DIH}" stroke="#2a2a2a" stroke-width="1"/><line x1="${DPL}" y1="${DPT+DIH}" x2="${DPL+DIW}" y2="${DPT+DIH}" stroke="#2a2a2a" stroke-width="1"/>`;
+
+    const svg = $('decu-svg');
+    const hg = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    svg.appendChild(hg);
+    const ov = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    ov.setAttribute('x', DPL); ov.setAttribute('y', DPT);
+    ov.setAttribute('width', DIW); ov.setAttribute('height', DIH);
+    ov.setAttribute('fill', 'transparent'); ov.style.cursor = 'crosshair';
+    svg.appendChild(ov);
+    ov.addEventListener('mousemove', e => {
+      const rect = svg.getBoundingClientRect();
+      const mx = (e.clientX - rect.left) * (DCW / rect.width);
+      const yr = Math.max(0, Math.min(maxT, Math.round((mx - DPL) / DIW * maxT)));
+      const bRow = br.find(r => r.year === yr);
+      const sRow = sr.find(r => r.year === yr);
+      const cx = xS(yr);
+      let h = `<line x1="${cx}" y1="${DPT}" x2="${cx}" y2="${DPT+DIH}" stroke="#333" stroke-width="1"/>`;
+      if (bRow) h += `<circle cx="${cx}" cy="${yS(bRow.portfolioEnd??bRow.portfolioStart)}" r="4" fill="#e8e8e8" stroke="#0d0d0d" stroke-width="1.5"/>`;
+      if (sRow) h += `<circle cx="${cx}" cy="${yS(sRow.portfolioEnd??sRow.portfolioStart)}" r="4" fill="#c8a96e" stroke="#0d0d0d" stroke-width="1.5"/>`;
+      const age  = bRow?.age ?? sRow?.age ?? (br[0].age + yr);
+      const bVal = bRow ? fmtMoney(bRow.portfolioEnd??bRow.portfolioStart) : t('gDepleted');
+      const sVal = sRow ? fmtMoney(sRow.portfolioEnd??sRow.portfolioStart) : t('gDepleted');
+      const yrTxt = S.lang === 'zh' ? `${t('chartYrPfx')} ${yr} 年 · 年齡 ${age}` : `yr ${yr}  ·  age ${age}`;
+      const tw = 132, th = 58;
+      let tx = cx + 10; if (tx + tw > DPL + DIW - 4) tx = cx - tw - 10;
+      const ty = DPT + 8;
+      h += `<rect x="${tx}" y="${ty}" width="${tw}" height="${th}" rx="3" fill="#1c1c1c" stroke="#3a3a3a" stroke-width="1"/>`;
+      h += `<text x="${tx+8}" y="${ty+14}" fill="#555" font-size="9" font-family="-apple-system,sans-serif">${yrTxt}</text>`;
+      h += `<circle cx="${tx+13}" cy="${ty+27}" r="3" fill="#e8e8e8"/>`;
+      h += `<text x="${tx+22}" y="${ty+31}" fill="#e8e8e8" font-size="10" font-family="-apple-system,sans-serif">${bVal}</text>`;
+      h += `<circle cx="${tx+13}" cy="${ty+45}" r="3" fill="#c8a96e"/>`;
+      h += `<text x="${tx+22}" y="${ty+49}" fill="#c8a96e" font-size="10" font-family="-apple-system,sans-serif">${sVal}</text>`;
+      hg.innerHTML = h;
+    });
+    ov.addEventListener('mouseleave', () => { hg.innerHTML = ''; });
   }
 
   function renderTable(rows) {
