@@ -118,6 +118,7 @@
     .leg-line { width: 14px; height: 2px; border-radius: 1px; display: inline-block; }
     .leg-line.base { background: #e8e8e8; }
     .leg-line.stress { background: var(--accent); }
+    .chart-legend.single .leg-item:last-child { display: none; }
 
     .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 5px; padding: 22px 16px 16px; margin-bottom: 20px; }
     .table-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding: 0 6px; }
@@ -291,7 +292,7 @@
     <div class="table-wrap hidden" id="table-wrap">
       <div class="table-header">
         <div class="chart-title" id="chart-table-title"></div>
-        <div class="scen-toggle">
+        <div class="scen-toggle" id="scen-toggle-wrap">
           <button class="scen-btn active" id="scen-stress"></button>
           <button class="scen-btn"        id="scen-base"></button>
         </div>
@@ -577,6 +578,7 @@
     $('mode-guardrails').classList.toggle('active', m === 'guardrails');
     $('fixed-inputs').classList.toggle('hidden', m !== 'fixed');
     $('guardrails-inputs').classList.toggle('hidden', m !== 'guardrails');
+    $('scen-toggle-wrap').classList.toggle('hidden', m === 'fixed');
     ls('fire_mode', m);
     if (doCalc) calc();
   }
@@ -704,19 +706,18 @@
       return;
     }
 
-    const sr = Math.max(0, inp.ret - 0.03);
     lastBaseRows   = simulateFixed(inp.savings, pmt, inp.ret, horizon, inp.age);
-    lastStressRows = simulateFixed(inp.savings, pmt, sr,      horizon, inp.age);
+    lastStressRows = [];
 
     renderFixedResults(inp, pmt, horizon);
-    renderFixedSummary(inp, lastBaseRows, lastStressRows);
-    drawDecuChart(lastBaseRows, lastStressRows, inp.savings);
+    renderFixedSummary(inp, lastBaseRows);
+    drawDecuChart(lastBaseRows, null, inp.savings);
     updateTableHeaders();
-    renderFixedTable(tableScen === 'base' ? lastBaseRows : lastStressRows);
+    renderFixedTable(lastBaseRows);
     updateScenDesc(inp);
 
-    $('leg-base-label').textContent   = `${t('scenBase')} (${(inp.ret*100).toFixed(1)}%)`;
-    $('leg-stress-label').textContent = `${t('scenStress')} (${(sr*100).toFixed(1)}%)`;
+    $('leg-base-label').textContent = `${(inp.ret*100).toFixed(1)}%`;
+    $('chart-legend').classList.add('single');
     $('decu-chart-wrap').classList.remove('hidden');
     $('table-wrap').classList.remove('hidden');
   }
@@ -736,6 +737,7 @@
     renderTable(tableScen === 'base' ? lastBaseRows : lastStressRows);
     updateScenDesc(inp);
 
+    $('chart-legend').classList.remove('single');
     $('leg-base-label').textContent   = `${t('scenBase')} (${(inp.ret*100).toFixed(1)}%)`;
     $('leg-stress-label').textContent = `${t('scenStress')} (${(sr*100).toFixed(1)}%)`;
     $('decu-chart-wrap').classList.remove('hidden');
@@ -756,21 +758,14 @@
     $('results-content').innerHTML = html;
   }
 
-  function renderFixedSummary(inp, baseRows, stressRows) {
+  function renderFixedSummary(inp, baseRows) {
     const el = $('mode-extra'); if (!el) return;
-    const baseLast   = baseRows[baseRows.length-1];
-    const stressLast = stressRows[stressRows.length-1];
-    const stressDep  = stressLast.portfolioEnd <= 0;
-    const sr = Math.max(0, inp.ret - 0.03);
-    const stressVal  = stressDep
-      ? `<span style="color:#c07070">${t('gDepletedAt')} ${stressLast.age}</span>`
-      : fmtMoney(stressLast.portfolioEnd);
-    el.innerHTML = `<div class="g-summary">
-      <div class="g-card"><div class="g-card-title">${t('scenBase')} (${(inp.ret*100).toFixed(1)}%)</div>
-        <div class="g-card-row"><span>${t('gFinalPort')}</span><span>${fmtMoney(baseLast.portfolioEnd)}</span></div></div>
-      <div class="g-card"><div class="g-card-title">${t('scenStress')} (${(sr*100).toFixed(1)}%)</div>
-        <div class="g-card-row"><span>${t('gFinalPort')}</span><span>${stressVal}</span></div></div>
-    </div>`;
+    const last = baseRows[baseRows.length-1];
+    const depleted = last.portfolioEnd <= 0;
+    const val = depleted
+      ? `<span style="color:#c07070">${t('gDepletedAt')} ${last.age}</span>`
+      : fmtMoney(last.portfolioEnd);
+    el.innerHTML = `<div class="metric-row"><span class="metric-label">${t('gFinalPort')}</span><span class="metric-val">${val}</span></div>`;
   }
 
   function renderFixedTable(rows) {
@@ -838,11 +833,11 @@
   }
 
   function updateScenDesc(inp) {
+    if (MODE === 'fixed') { $('scen-desc').textContent = ''; return; }
     const sr = Math.max(0, inp.ret - 0.03);
-    const stressKey = MODE === 'fixed' ? 'scenStressDescFixed' : 'scenStressDesc';
     $('scen-desc').textContent = tableScen === 'base'
       ? `${t('scenBaseDesc')} — ${(inp.ret*100).toFixed(1)}%`
-      : `${t(stressKey)} — ${(sr*100).toFixed(1)}%`;
+      : `${t('scenStressDesc')} — ${(sr*100).toFixed(1)}%`;
   }
 
   function metric(label, val) {
@@ -853,19 +848,23 @@
   const DCW=800,DCH=200,DPL=64,DPR=24,DPT=14,DPB=36,DIW=DCW-DPL-DPR,DIH=DCH-DPT-DPB;
 
   function drawDecuChart(br, sr, sp) {
-    const av = [...br,...sr].flatMap(r => [r.portfolioStart, r.portfolioEnd||0]);
+    const av = [...br, ...(sr||[])].flatMap(r => [r.portfolioStart, r.portfolioEnd||0]);
     const maxV = Math.max(sp*1.15, ...av, 1);
-    const maxT = Math.max(br[br.length-1].year, sr[sr.length-1].year);
+    const maxT = sr ? Math.max(br[br.length-1].year, sr[sr.length-1].year) : br[br.length-1].year;
     const xS = v => DPL+(v/maxT)*DIW, yS = v => DPT+DIH-(Math.max(0,v)/maxV)*DIH;
     let gl='',yl='';
     for (let i=0;i<=4;i++) { const v=maxV*i/4,y=yS(v); gl+=`<line x1="${DPL}" y1="${y}" x2="${DPL+DIW}" y2="${y}" stroke="#1a1a1a" stroke-width="1"/>`;yl+=`<text x="${DPL-8}" y="${y+4}" text-anchor="end" fill="#888" font-size="10">${fmtMoney(v)}</text>`; }
     let xl=''; const step=maxT<=20?5:maxT<=40?10:15;
     for (let yr=0;yr<=maxT;yr+=step) xl+=`<text x="${xS(yr)}" y="${DPT+DIH+18}" text-anchor="middle" fill="#888" font-size="10">${t('chartYrPfx')} ${yr}</text>`;
     const bl = br.map(r=>`${xS(r.year)},${yS(r.portfolioEnd??r.portfolioStart)}`).join(' ');
-    const sl = sr.map(r=>`${xS(r.year)},${yS(r.portfolioEnd??r.portfolioStart)}`).join(' ');
-    let ed = '';
-    if (MODE === 'guardrails') sr.forEach(r => { if (r.event==='cut'||r.event==='raise') { const col=r.event==='cut'?'#c07070':'#70a870'; ed+=`<circle cx="${xS(r.year)}" cy="${yS(r.portfolioEnd)}" r="4" fill="${col}" opacity="0.85"/>`; } });
-    $('decu-svg').innerHTML = `<clipPath id="dc"><rect x="${DPL}" y="${DPT}" width="${DIW}" height="${DIH}"/></clipPath>${gl}${yl}${xl}<g clip-path="url(#dc)"><polyline points="${bl}" fill="none" stroke="#e8e8e8" stroke-width="1.5" stroke-linejoin="round" opacity="0.5"/><polyline points="${sl}" fill="none" stroke="#c8a96e" stroke-width="1.5" stroke-linejoin="round"/>${ed}</g><line x1="${DPL}" y1="${DPT}" x2="${DPL}" y2="${DPT+DIH}" stroke="#2a2a2a" stroke-width="1"/><line x1="${DPL}" y1="${DPT+DIH}" x2="${DPL+DIW}" y2="${DPT+DIH}" stroke="#2a2a2a" stroke-width="1"/>`;
+    const baseOpacity = sr ? '0.5' : '0.9';
+    let stressLine = '', ed = '';
+    if (sr) {
+      const sl = sr.map(r=>`${xS(r.year)},${yS(r.portfolioEnd??r.portfolioStart)}`).join(' ');
+      stressLine = `<polyline points="${sl}" fill="none" stroke="#c8a96e" stroke-width="1.5" stroke-linejoin="round"/>`;
+      sr.forEach(r => { if (r.event==='cut'||r.event==='raise') { const col=r.event==='cut'?'#c07070':'#70a870'; ed+=`<circle cx="${xS(r.year)}" cy="${yS(r.portfolioEnd)}" r="4" fill="${col}" opacity="0.85"/>`; } });
+    }
+    $('decu-svg').innerHTML = `<clipPath id="dc"><rect x="${DPL}" y="${DPT}" width="${DIW}" height="${DIH}"/></clipPath>${gl}${yl}${xl}<g clip-path="url(#dc)"><polyline points="${bl}" fill="none" stroke="#e8e8e8" stroke-width="1.5" stroke-linejoin="round" opacity="${baseOpacity}"/>${stressLine}${ed}</g><line x1="${DPL}" y1="${DPT}" x2="${DPL}" y2="${DPT+DIH}" stroke="#2a2a2a" stroke-width="1"/><line x1="${DPL}" y1="${DPT+DIH}" x2="${DPL+DIW}" y2="${DPT+DIH}" stroke="#2a2a2a" stroke-width="1"/>`;
 
     const svg = $('decu-svg');
     const hg = document.createElementNS('http://www.w3.org/2000/svg', 'g');
@@ -880,24 +879,26 @@
       const mx = (e.clientX - rect.left) * (DCW / rect.width);
       const yr = Math.max(0, Math.min(maxT, Math.round((mx - DPL) / DIW * maxT)));
       const bRow = br.find(r => r.year === yr);
-      const sRow = sr.find(r => r.year === yr);
+      const sRow = sr ? sr.find(r => r.year === yr) : null;
       const cx = xS(yr);
       let h = `<line x1="${cx}" y1="${DPT}" x2="${cx}" y2="${DPT+DIH}" stroke="#333" stroke-width="1"/>`;
       if (bRow) h += `<circle cx="${cx}" cy="${yS(bRow.portfolioEnd??bRow.portfolioStart)}" r="4" fill="#e8e8e8" stroke="#0d0d0d" stroke-width="1.5"/>`;
       if (sRow) h += `<circle cx="${cx}" cy="${yS(sRow.portfolioEnd??sRow.portfolioStart)}" r="4" fill="#c8a96e" stroke="#0d0d0d" stroke-width="1.5"/>`;
-      const age  = bRow?.age ?? sRow?.age ?? (br[0].age + yr);
-      const bVal = bRow  ? fmtMoney(bRow.portfolioEnd??bRow.portfolioStart)  : t('gDepleted');
-      const sVal = sRow  ? fmtMoney(sRow.portfolioEnd??sRow.portfolioStart)  : t('gDepleted');
+      const age = bRow?.age ?? (br[0].age + yr);
+      const bVal = bRow ? fmtMoney(bRow.portfolioEnd??bRow.portfolioStart) : t('gDepleted');
       const yrTxt = S.lang === 'zh' ? `${t('chartYrPfx')} ${yr} 年 · 年齡 ${age}` : `yr ${yr}  ·  age ${age}`;
-      const tw = 132, th = 58;
+      const tw = 132, th = sr ? 58 : 42;
       let tx = cx + 10; if (tx + tw > DPL + DIW - 4) tx = cx - tw - 10;
       const ty = DPT + 8;
       h += `<rect x="${tx}" y="${ty}" width="${tw}" height="${th}" rx="3" fill="#1c1c1c" stroke="#3a3a3a" stroke-width="1"/>`;
       h += `<text x="${tx+8}" y="${ty+14}" fill="#555" font-size="9" font-family="-apple-system,sans-serif">${yrTxt}</text>`;
       h += `<circle cx="${tx+13}" cy="${ty+27}" r="3" fill="#e8e8e8"/>`;
       h += `<text x="${tx+22}" y="${ty+31}" fill="#e8e8e8" font-size="10" font-family="-apple-system,sans-serif">${bVal}</text>`;
-      h += `<circle cx="${tx+13}" cy="${ty+45}" r="3" fill="#c8a96e"/>`;
-      h += `<text x="${tx+22}" y="${ty+49}" fill="#c8a96e" font-size="10" font-family="-apple-system,sans-serif">${sVal}</text>`;
+      if (sr) {
+        const sVal = sRow ? fmtMoney(sRow.portfolioEnd??sRow.portfolioStart) : t('gDepleted');
+        h += `<circle cx="${tx+13}" cy="${ty+45}" r="3" fill="#c8a96e"/>`;
+        h += `<text x="${tx+22}" y="${ty+49}" fill="#c8a96e" font-size="10" font-family="-apple-system,sans-serif">${sVal}</text>`;
+      }
       hg.innerHTML = h;
     });
     ov.addEventListener('mouseleave', () => { hg.innerHTML = ''; });
