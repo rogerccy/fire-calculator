@@ -192,6 +192,7 @@
         <div class="mode-toggle">
           <button class="mode-btn active" id="mode-fixed"      onclick="setMode('fixed')"></button>
           <button class="mode-btn"        id="mode-guardrails" onclick="setMode('guardrails')"></button>
+          <button class="mode-btn"        id="mode-vpw"        onclick="setMode('vpw')"></button>
         </div>
 
         <!-- Shared inputs -->
@@ -392,6 +393,11 @@
       gDepletedAt:        'Depleted at age',
       eventCut:           '↓ Cut 10%',
       eventRaise:         '↑ Raise 10%',
+      modeVpw:            'VPW',
+      vpwLabel:           'variable % · die with zero',
+      thVpwRate:          'VPW %',
+      gFirstYear:         'Year 1 income',
+      gMinYear:           'Lowest year',
       syncing:            'syncing…',
       synced:             'synced ✓',
       syncFailed:         'sync failed',
@@ -457,6 +463,11 @@
       gDepletedAt:        '耗盡年齡',
       eventCut:           '↓ 削減 10%',
       eventRaise:         '↑ 提高 10%',
+      modeVpw:            'VPW',
+      vpwLabel:           '變動提領 · 歸零而終',
+      thVpwRate:          'VPW%',
+      gFirstYear:         '第一年收入',
+      gMinYear:           '最低年份',
       syncing:            '同步中…',
       synced:             '已同步 ✓',
       syncFailed:         '同步失敗',
@@ -519,6 +530,7 @@
     $('panel-results-title').textContent = t('panelResults');
     $('mode-fixed').textContent      = t('modeFixed');
     $('mode-guardrails').textContent = t('modeGuardrails');
+    $('mode-vpw').textContent        = t('modeVpw');
     $('label-age').textContent       = t('labelAge');
     $('label-portfolio').textContent = t('labelPortfolio');
     $('label-return').textContent    = t('labelReturn');
@@ -607,6 +619,7 @@
     MODE = m;
     $('mode-fixed').classList.toggle('active', m === 'fixed');
     $('mode-guardrails').classList.toggle('active', m === 'guardrails');
+    $('mode-vpw').classList.toggle('active', m === 'vpw');
     $('fixed-inputs').classList.toggle('hidden', m !== 'fixed');
     $('guardrails-inputs').classList.toggle('hidden', m !== 'guardrails');
     $('scen-toggle-wrap').classList.toggle('hidden', m === 'fixed');
@@ -648,12 +661,18 @@
   $('scen-stress').onclick = () => {
     tableScen = 'stress';
     $('scen-stress').classList.add('active'); $('scen-base').classList.remove('active');
-    const inp = getInputs(); renderTable(lastStressRows, inp.inflation); updateScenDesc(inp);
+    const inp = getInputs();
+    if (MODE === 'vpw') renderVpwTable(lastStressRows, inp.inflation);
+    else renderTable(lastStressRows, inp.inflation);
+    updateScenDesc(inp);
   };
   $('scen-base').onclick = () => {
     tableScen = 'base';
     $('scen-base').classList.add('active'); $('scen-stress').classList.remove('active');
-    const inp = getInputs(); renderTable(lastBaseRows, inp.inflation); updateScenDesc(inp);
+    const inp = getInputs();
+    if (MODE === 'vpw') renderVpwTable(lastBaseRows, inp.inflation);
+    else renderTable(lastBaseRows, inp.inflation);
+    updateScenDesc(inp);
   };
 
   function syncSliderDisplays() {
@@ -729,6 +748,97 @@
     return rows;
   }
 
+  // ── VPW simulation ───────────────────────────────
+  function vpwRate(n, r) {
+    if (n <= 0) return 1;
+    if (r === 0) return 1 / n;
+    return r / ((1 - Math.pow(1 + r, -n)) * (1 + r));
+  }
+
+  function simulateVpw(pv, ret, horizon, sa) {
+    const rows = [];
+    let port = pv;
+    rows.push({year:0, age:sa, portfolioStart:port, vpwPct:0, withdraw:0, portfolioEnd:port});
+    for (let y = 1; y <= horizon; y++) {
+      const n = horizon - y + 1;
+      const pct = vpwRate(n, ret);
+      const wd = Math.min(port * pct, port);
+      const pe = Math.max(0, (port - wd) * (1 + ret));
+      rows.push({year:y, age:sa+y, portfolioStart:port, vpwPct:pct*100, withdraw:wd, portfolioEnd:pe});
+      port = pe;
+      if (port <= 0.01) break;
+    }
+    return rows;
+  }
+
+  function calcVpw(inp) {
+    const horizon = Math.max(1, Math.round(inp.deathAge - inp.age));
+    const sr = Math.max(0, inp.ret - 0.03);
+
+    lastBaseRows   = simulateVpw(inp.savings, inp.ret, horizon, inp.age);
+    lastStressRows = simulateVpw(inp.savings, sr,      horizon, inp.age);
+
+    renderVpwResults(inp, lastBaseRows, horizon);
+    renderVpwSummary(inp, lastBaseRows, lastStressRows);
+    drawDecuChart(lastBaseRows, lastStressRows, inp.savings);
+    updateTableHeaders();
+    renderVpwTable(tableScen === 'base' ? lastBaseRows : lastStressRows, inp.inflation);
+    updateScenDesc(inp);
+
+    $('chart-legend').classList.remove('single');
+    $('leg-base-label').textContent   = `${t('scenBase')} (${(inp.ret*100).toFixed(1)}%)`;
+    $('leg-stress-label').textContent = `${t('scenStress')} (${(sr*100).toFixed(1)}%)`;
+    $('decu-chart-wrap').classList.remove('hidden');
+    $('table-wrap').classList.remove('hidden');
+  }
+
+  // ── Render: VPW ──────────────────────────────────
+  function renderVpwResults(inp, rows, horizon) {
+    const firstWithdraw = rows.length > 1 ? rows[1].withdraw : 0;
+    const monthly = firstWithdraw / 12;
+    let html = `<div class="result-main">${fmtMoney(firstWithdraw)}</div>
+      <div class="result-sub-row"><span class="result-sub">${t('withdrawThisYear')} &mdash; ${t('vpwLabel')}</span></div>`;
+    html += `<div class="metrics">`;
+    html += metric(t('monthlyLabel'), fmtMoney(monthly) + t('perMonth'));
+    html += metric(t('horizonLabel'), `${horizon} ${t('yearsLabel')}`);
+    html += metric(t('portfolioLabel'), fmtMoney(inp.savings));
+    html += `</div><div id="mode-extra"></div>`;
+    $('results-content').innerHTML = html;
+  }
+
+  function renderVpwSummary(inp, baseRows, stressRows) {
+    const el = $('mode-extra'); if (!el) return;
+    const sum = rows => {
+      const spending = rows.filter(r => r.year > 0).map(r => r.withdraw);
+      return { first: spending[0] || 0, min: Math.min(...spending) };
+    };
+    const b = sum(baseRows), s = sum(stressRows);
+    const sr = Math.max(0, inp.ret - 0.03);
+    el.innerHTML = `<div class="g-summary">
+      <div class="g-card"><div class="g-card-title">${t('scenBase')} (${(inp.ret*100).toFixed(1)}%)</div>
+        <div class="g-card-row"><span>${t('gFirstYear')}</span><span>${fmtMoney(b.first)}</span></div>
+        <div class="g-card-row"><span>${t('gMinYear')}</span><span>${fmtMoney(b.min)}</span></div></div>
+      <div class="g-card"><div class="g-card-title">${t('scenStress')} (${(sr*100).toFixed(1)}%)</div>
+        <div class="g-card-row"><span>${t('gFirstYear')}</span><span>${fmtMoney(s.first)}</span></div>
+        <div class="g-card-row"><span>${t('gMinYear')}</span><span style="color:#c07070">${fmtMoney(s.min)}</span></div></div>
+    </div>`;
+  }
+
+  function renderVpwTable(rows, inflation) {
+    $('table-body').innerHTML = rows.filter(r => r.year > 0).map(r => {
+      const dep = r.portfolioEnd <= 0.01 && r.year < rows[rows.length-1].year;
+      const nominal = fmtMoney(r.withdraw * Math.pow(1 + inflation, r.year));
+      return `<tr class="${dep?'depleted-row':''}">
+        <td>${r.year}</td><td>${r.age}</td>
+        <td>${fmtMoney(r.portfolioStart)}</td>
+        <td>${r.vpwPct.toFixed(1)}%</td>
+        <td>${fmtMoney(r.withdraw)}</td>
+        <td>${nominal}</td>
+        <td>${dep ? `<span style="color:#c07070">${t('gDepleted')}</span>` : fmtMoney(r.portfolioEnd)}</td>
+      </tr>`;
+    }).join('');
+  }
+
   // ── Main dispatch ─────────────────────────────────
   function calc() {
     const inp = getInputs();
@@ -740,7 +850,8 @@
       return;
     }
     if (MODE === 'fixed') calcFixed(inp);
-    else calcGuardrails(inp);
+    else if (MODE === 'guardrails') calcGuardrails(inp);
+    else calcVpw(inp);
   }
 
   function calcFixed(inp) {
@@ -879,6 +990,8 @@
   function updateTableHeaders() {
     const keys = MODE === 'fixed'
       ? ['thYear','thAge','thPortfolio','thWithdraw','thNominalWithdraw','thPortEnd']
+      : MODE === 'vpw'
+      ? ['thYear','thAge','thPortfolio','thVpwRate','thWithdraw','thNominalWithdraw','thPortEnd']
       : ['thYear','thAge','thPortfolio','thRate','thWithdraw','thNominalWithdraw','thAction'];
     $('table-head-row').innerHTML = keys.map(k => `<th>${t(k)}</th>`).join('');
   }
