@@ -601,6 +601,7 @@
         if (c.lower)  $('i-lower').value   = c.lower;
         if (c.death)  $('i-death').value   = c.death;
         if (c.remain !== undefined) $('i-remain').value = c.remain;
+        if (c.mode) MODE = c.mode;
       } catch(_) {}
     }
 
@@ -627,7 +628,7 @@
     if (doCalc) calc();
   }
 
-  function setMode(m) { applyMode(m, true); }
+  function setMode(m) { applyMode(m, true); scheduleSave(); }
 
   $('connect-btn').onclick = async () => {
     const pat = $('pat').value.trim(); if (!pat) return;
