@@ -202,6 +202,7 @@
           <button class="mode-btn"        id="mode-guardrails" onclick="setMode('guardrails')"></button>
           <button class="mode-btn"        id="mode-vpw"        onclick="setMode('vpw')"></button>
         </div>
+        <p id="timing-note" style="font-size:0.63rem;color:var(--muted2);text-align:center;margin:-12px 0 16px;letter-spacing:0.03em"></p>
 
         <!-- Shared inputs -->
         <div class="input-row">
@@ -443,6 +444,7 @@
       thVpwRate:          'VPW %',
       gFirstYear:         'Year 1 income',
       gMinYear:           'Lowest year',
+      timingNote:         'Each year: withdraw on Jan 1 · remainder grows for 12 months',
       labelSigma:         'Annual Volatility (σ)',
       presetConservative: 'Conservative 8%',
       mcTitle:            'Monte Carlo · 500 Simulations',
@@ -523,6 +525,7 @@
       thVpwRate:          'VPW%',
       gFirstYear:         '第一年收入',
       gMinYear:           '最低年份',
+      timingNote:         '每年 1/1 先提領 · 剩餘資金投資滿一年',
       labelSigma:         '年化波動度 (σ)',
       presetConservative: '保守配置 8%',
       mcTitle:            'Monte Carlo · 500 次模擬',
@@ -615,6 +618,7 @@
     $('scen-stress').textContent = t('scenStress');
     $('scen-base').textContent   = t('scenBase');
 
+    $('timing-note').textContent       = t('timingNote');
     $('mc-title-el').textContent       = t('mcTitle');
     $('label-sigma').textContent       = t('labelSigma');
     $('preset-conservative').textContent = t('presetConservative');
@@ -807,7 +811,8 @@
     if (n <= 0) return 0;
     if (r === 0) return (pv - remain) / n;
     const growth = Math.pow(1 + r, n);
-    return (pv * growth - remain) * r / (growth - 1);
+    // Annuity-due: withdraw at start of each year → PMT_due = PMT_imm / (1+r)
+    return (pv * growth - remain) * r / ((1 + r) * (growth - 1));
   }
 
   function simulateFixed(pv, pmt, ret, horizon, sa) {
@@ -815,10 +820,9 @@
     let port = pv;
     rows.push({year:0, age:sa, portfolioStart:port, withdraw:0, portfolioEnd:port});
     for (let y = 1; y <= horizon; y++) {
-      const ps = port * (1 + ret);
-      const wd = Math.min(Math.max(0, pmt), ps);
-      const pe = Math.max(0, ps - wd);
-      rows.push({year:y, age:sa+y, portfolioStart:ps, withdraw:wd, portfolioEnd:pe});
+      const wd = Math.min(Math.max(0, pmt), port);  // withdraw at start of year
+      const pe = Math.max(0, (port - wd) * (1 + ret));  // remainder grows
+      rows.push({year:y, age:sa+y, portfolioStart:port, withdraw:wd, portfolioEnd:pe});
       port = pe;
       if (port <= 0) break;
     }
@@ -832,12 +836,13 @@
     const ut = iwr*(1+up/100), lt = iwr*(1-lo/100);
     rows.push({year:0, age:sa, portfolioStart:port, currentRate:iwr*100, withdraw:0, event:'start', portfolioEnd:port});
     for (let y = 1; y <= h; y++) {
-      const ps = port*(1+ret), cr = ps>0 ? spend/ps : Infinity;
+      const cr = port > 0 ? spend/port : Infinity;  // rate vs beginning-of-year portfolio
       let ev = 'normal';
       if (cr > ut) { spend *= 0.90; ev = 'cut'; }
       else if (cr < lt) { spend *= 1.10; ev = 'raise'; }
-      const pe = Math.max(0, ps - spend);
-      rows.push({year:y, age:sa+y, portfolioStart:ps, currentRate:cr*100, withdraw:spend, event:ev, portfolioEnd:pe});
+      const wd = Math.min(spend, port);  // withdraw at start of year
+      const pe = Math.max(0, (port - wd) * (1 + ret));  // remainder grows
+      rows.push({year:y, age:sa+y, portfolioStart:port, currentRate:cr*100, withdraw:spend, event:ev, portfolioEnd:pe});
       port = pe;
       if (port <= 0) break;
     }
@@ -1199,15 +1204,13 @@
         const r = Math.exp(logMean + sigma * boxMuller()) - 1;
         let wd;
         if (MODE === 'fixed') {
-          const ps = port * (1 + r);
-          wd = Math.min(Math.max(0, pmt), ps);
-          port = Math.max(0, ps - wd);
+          wd = Math.min(Math.max(0, pmt), port);          // withdraw at start
+          port = Math.max(0, (port - wd) * (1 + r));      // remainder grows
         } else if (MODE === 'guardrails') {
-          const ps = port * (1 + r);
-          const cr = ps > 0 ? spend / ps : Infinity;
+          const cr = port > 0 ? spend / port : Infinity;  // rate vs current portfolio
           if (cr > ut) spend *= 0.90; else if (cr < lt) spend *= 1.10;
-          wd = Math.min(spend, ps);
-          port = Math.max(0, ps - wd);
+          wd = Math.min(spend, port);                      // withdraw at start
+          port = Math.max(0, (port - wd) * (1 + r));      // remainder grows
         } else {
           const n = horizon - y + 1;
           wd = port * vpwRate(n, inp.ret);
