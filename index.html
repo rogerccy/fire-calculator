@@ -198,10 +198,13 @@
       <div class="panel">
         <div class="panel-title" id="panel-inputs-title"></div>
 
-        <div class="mode-toggle">
-          <button class="mode-btn active" id="mode-fixed"      onclick="setMode('fixed')"></button>
-          <button class="mode-btn"        id="mode-guardrails" onclick="setMode('guardrails')"></button>
-          <button class="mode-btn"        id="mode-vpw"        onclick="setMode('vpw')"></button>
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:20px">
+          <div class="mode-toggle" style="flex:1;margin-bottom:0">
+            <button class="mode-btn active" id="mode-fixed"      onclick="setMode('fixed')"></button>
+            <button class="mode-btn"        id="mode-guardrails" onclick="setMode('guardrails')"></button>
+            <button class="mode-btn"        id="mode-vpw"        onclick="setMode('vpw')"></button>
+          </div>
+          <button class="tip-btn" data-tip="modes">?</button>
         </div>
         <p id="timing-note" style="font-size:0.63rem;color:var(--muted2);text-align:center;margin:-12px 0 16px;letter-spacing:0.03em"></p>
 
@@ -575,6 +578,10 @@
     presets: {
       en: { title: 'Return Presets — Data Sources', body: 'VT (2008–2025): CAGR 8.2%, σ 17.8%. Total return in USD, dividends reinvested. Source: totalrealreturns.com.\n\n0050 (2004–2025): CAGR 11.8%, σ 23.4%. Dividend-adjusted total return in TWD. Source: havocfuture.tw.\n\nConservative: general estimate for a bond-heavy or balanced portfolio.' },
       zh: { title: '報酬率預設值——資料來源', body: 'VT（2008–2025）：CAGR 8.2%，σ 17.8%。美元含息總報酬。資料來源：totalrealreturns.com。\n\n0050（2004–2025）：CAGR 11.8%，σ 23.4%。新台幣還原除權息。資料來源：havocfuture.tw。\n\n保守：債券型或均衡型投資組合概略估計值。' }
+    },
+    modes: {
+      en: { title: 'Withdrawal Strategies', body: '<b>Fixed</b> — same inflation-adjusted amount every year. Predictable; portfolio may deplete early if returns disappoint.\n\n<b>Guardrails</b> — starts at your target rate; cuts spending 10% when portfolio lags, raises 10% when it grows.\n\n<b>VPW</b> — a rising % recalculated each year to spend down to exactly $0 at your target age.' },
+      zh: { title: '提領策略說明', body: '<b>固定年金</b> — 每年提領相同金額（調整通膨）。穩定可預測，但報酬不如預期時可能提早耗盡。\n\n<b>護欄策略</b> — 以設定提領率為基準，投資組合落後時削減 10%，成長時提高 10%，動態適應市場。\n\n<b>變動提領 (VPW)</b> — 每年依剩餘年數重新計算提領比例，目標在設定年齡時精確花光資產。' }
     },
   };
 
