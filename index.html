@@ -229,12 +229,6 @@
               <input type="range" id="i-return" min="1" max="15" step="0.5" value="10">
               <span class="slider-val" id="v-return">10%</span>
             </div>
-            <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center;margin-top:8px">
-              <button class="preset-btn" data-ret="5" data-sigma="8" onclick="setReturnPreset(5,8)" id="preset-conservative"></button>
-              <button class="preset-btn" data-ret="8" data-sigma="18" onclick="setReturnPreset(8,18)">VT &nbsp;8%</button>
-              <button class="preset-btn" data-ret="12" data-sigma="23" onclick="setReturnPreset(12,23)">0050 &nbsp;12%</button>
-              <button class="tip-btn" data-tip="presets" style="margin-left:2px">?</button>
-            </div>
           </div>
           <div>
             <div class="label-row" style="margin-bottom:6px">
@@ -244,6 +238,17 @@
             <div class="slider-row">
               <input type="range" id="i-sigma" min="3" max="35" step="0.5" value="15">
               <span class="slider-val" id="v-sigma">15%</span>
+            </div>
+          </div>
+          <div style="border-top:1px solid var(--border);padding-top:10px">
+            <div class="label-row" style="margin-bottom:7px">
+              <span class="form-label" id="label-presets"></span>
+              <button class="tip-btn" data-tip="presets">?</button>
+            </div>
+            <div style="display:flex;gap:4px;flex-wrap:wrap">
+              <button class="preset-btn" data-ret="5" data-sigma="8" onclick="setReturnPreset(5,8)" id="preset-conservative"></button>
+              <button class="preset-btn" data-ret="8" data-sigma="18" onclick="setReturnPreset(8,18)">VT &nbsp;8%·σ18%</button>
+              <button class="preset-btn" data-ret="12" data-sigma="23" onclick="setReturnPreset(12,23)">0050 &nbsp;12%·σ23%</button>
             </div>
           </div>
         </div>
@@ -423,7 +428,8 @@
       vpwLowReturn:       'Real return ≤ 0% — raise nominal return or lower inflation to see a meaningful stress comparison.',
       timingNote:         'Each year: withdraw on Jan 1 · remainder grows for 12 months',
       labelSigma:         'Annual Volatility (σ)',
-      presetConservative: 'Conservative 8%',
+      labelPresets:       'Presets',
+      presetConservative: 'Conserv. 5%·σ8%',
       mcTitle:            'Monte Carlo · 500 Simulations',
       mcSuccessRate:      'Success Rate',
       mcDesc:             'Bands show 5th / 25th / 50th / 75th / 95th percentile portfolio outcomes across 500 simulations with the given volatility.',
@@ -508,7 +514,8 @@
       vpwLowReturn:       '實質報酬率 ≤ 0%——請提高名目報酬率或降低通膨率，以獲得有意義的壓力測試比較。',
       timingNote:         '每年 1/1 先提領 · 剩餘資金投資滿一年',
       labelSigma:         '年化波動度 (σ)',
-      presetConservative: '保守配置 8%',
+      labelPresets:       '快速預設',
+      presetConservative: '保守 5%·σ8%',
       mcTitle:            'Monte Carlo · 500 次模擬',
       mcSuccessRate:      '成功率',
       mcDesc:             '色帶顯示 500 次模擬中，投資組合結果的 5th / 25th / 50th / 75th / 95th 百分位。',
@@ -606,6 +613,7 @@
 
     $('timing-note').textContent         = t('timingNote');
     $('label-sigma').textContent         = t('labelSigma');
+    $('label-presets').textContent       = t('labelPresets');
     $('preset-conservative').textContent = t('presetConservative');
     $('mc-leg-outer').textContent        = t('mcLegOuter');
     $('mc-leg-inner').textContent        = t('mcLegInner');
