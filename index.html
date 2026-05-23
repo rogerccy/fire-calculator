@@ -227,10 +227,11 @@
             <input type="range" id="i-return" min="1" max="15" step="0.5" value="10">
             <span class="slider-val" id="v-return">10%</span>
           </div>
-          <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:6px">
+          <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center;margin-top:6px">
             <button class="preset-btn" data-ret="5" data-sigma="8" onclick="setReturnPreset(5,8)" id="preset-conservative"></button>
-            <button class="preset-btn" data-ret="9" data-sigma="15" onclick="setReturnPreset(9,15)">VT &nbsp;9%</button>
-            <button class="preset-btn" data-ret="14" data-sigma="18" onclick="setReturnPreset(14,18)">0050 &nbsp;14%</button>
+            <button class="preset-btn" data-ret="8" data-sigma="18" onclick="setReturnPreset(8,18)">VT &nbsp;8%</button>
+            <button class="preset-btn" data-ret="12" data-sigma="23" onclick="setReturnPreset(12,23)">0050 &nbsp;12%</button>
+            <button class="tip-btn" data-tip="presets" style="margin-left:2px">?</button>
           </div>
         </div>
         <div class="input-row">
@@ -556,8 +557,12 @@
       zh: { title: '下限護欄', body: '若投資組合增值導致提領率低於 IWR × (1 − 下限%)，提高支出 10%。例如：IWR 5%，下限 −20% → 在 4% 時觸發。' }
     },
     sigma: {
-      en: { title: 'Annual Volatility (σ)', body: 'Standard deviation of annual real returns. Global stock funds (VT) ≈ 15%; Taiwan 0050 ≈ 18%; a bond-heavy portfolio ≈ 8–10%. Higher σ = wider fan chart = more uncertain outcomes.' },
-      zh: { title: '年化波動度 (σ)', body: '年實質報酬率的標準差。全球股票基金（VT）約 15%；台灣 0050 約 18%；保守/債券型組合約 8–10%。σ 越高，扇形圖越寬，結果越不確定。' }
+      en: { title: 'Annual Volatility (σ)', body: 'Standard deviation of annual log returns. VT ≈ 18%; Taiwan 0050 ≈ 23%; a bond-heavy portfolio ≈ 8%. Higher σ = wider fan chart = more uncertain outcomes.' },
+      zh: { title: '年化波動度 (σ)', body: '年報酬率的標準差。VT 約 18%；台灣 0050 約 23%；保守/債券型組合約 8%。σ 越高，扇形圖越寬，結果越不確定。' }
+    },
+    presets: {
+      en: { title: 'Return Presets — Data Sources', body: 'VT (2008–2025): CAGR 8.2%, σ 17.8%. Total return in USD, dividends reinvested. Source: totalrealreturns.com.\n\n0050 (2004–2025): CAGR 11.8%, σ 23.4%. Dividend-adjusted total return in TWD. Source: havocfuture.tw.\n\nConservative: general estimate for a bond-heavy or balanced portfolio.' },
+      zh: { title: '報酬率預設值——資料來源', body: 'VT（2008–2025）：CAGR 8.2%，σ 17.8%。美元含息總報酬。資料來源：totalrealreturns.com。\n\n0050（2004–2025）：CAGR 11.8%，σ 23.4%。新台幣還原除權息。資料來源：havocfuture.tw。\n\n保守：債券型或均衡型投資組合概略估計值。' }
     },
   };
 
@@ -615,7 +620,7 @@
   function openTip(btn, key) {
     const tip = TIPS[key]; if (!tip) return;
     const data = tip[S.lang] || tip.en;
-    tipTitle.textContent = data.title; tipBody.textContent = data.body;
+    tipTitle.textContent = data.title; tipBody.innerHTML = data.body.replace(/\n/g, '<br>');
     tipEl.classList.remove('visible'); tipEl.style.left = '-9999px'; tipEl.style.top = '-9999px';
     tipEl.classList.add('visible');
     const br = btn.getBoundingClientRect(), tw = tipEl.offsetWidth, th = tipEl.offsetHeight;
