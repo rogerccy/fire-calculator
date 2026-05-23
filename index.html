@@ -417,6 +417,7 @@
       thVpwRate:          'VPW %',
       gFirstYear:         'Year 1 income',
       gMinYear:           'Lowest year',
+      vpwLowReturn:       'Real return ≤ 0% — raise nominal return or lower inflation to see a meaningful stress comparison.',
       timingNote:         'Each year: withdraw on Jan 1 · remainder grows for 12 months',
       labelSigma:         'Annual Volatility (σ)',
       presetConservative: 'Conservative 8%',
@@ -501,6 +502,7 @@
       thVpwRate:          'VPW%',
       gFirstYear:         '第一年收入',
       gMinYear:           '最低年份',
+      vpwLowReturn:       '實質報酬率 ≤ 0%——請提高名目報酬率或降低通膨率，以獲得有意義的壓力測試比較。',
       timingNote:         '每年 1/1 先提領 · 剩餘資金投資滿一年',
       labelSigma:         '年化波動度 (σ)',
       presetConservative: '保守配置 8%',
@@ -655,7 +657,7 @@
         const c = JSON.parse(saved);
         if (c.age)    $('i-age').value     = c.age;
         if (c.savings)$('i-savings').value = c.savings;
-        if (c.ret)                $('i-return').value    = c.ret;
+        if (c.ret) $('i-return').value = +c.ret >= 1 ? c.ret : 10;  // guard: old format stored decimal
         if (c.inflation !== undefined) $('i-inflation').value = c.inflation;
         if (c.iwr)                $('i-iwr').value       = c.iwr;
         if (c.upper)  $('i-upper').value   = c.upper;
@@ -864,6 +866,10 @@
 
   function renderVpwSummary(inp, baseRows, stressRows) {
     const el = $('mode-extra'); if (!el) return;
+    if (inp.ret <= 0) {
+      el.innerHTML = `<div class="banner warning">${t('vpwLowReturn')}</div>`;
+      return;
+    }
     const sum = rows => {
       const spending = rows.filter(r => r.year > 0).map(r => r.withdraw);
       return { first: spending[0] || 0, min: Math.min(...spending) };
@@ -1169,7 +1175,7 @@
   // ── Gist / Persist ────────────────────────────────
   function ghFetch(p,path,o={}){return fetch(API+path,{...o,headers:{'Authorization':`token ${p}`,'Content-Type':'application/json',...(o.headers||{})}});}
   async function findGist(p){for(let pg=1;;pg++){const r=await ghFetch(p,`/gists?per_page=100&page=${pg}`);if(!r.ok)return null;const l=await r.json();const h=l.find(g=>g.files[GF]);if(h){const f=await ghFetch(p,`/gists/${h.id}`);return f.ok?f.json():null;}if(l.length<100)return null;}}
-  function applyGist(g){try{const c=JSON.parse(g.files[GF].content);if(c.age)$('i-age').value=c.age;if(c.savings)$('i-savings').value=c.savings;if(c.ret)$('i-return').value=c.ret;if(c.inflation!==undefined)$('i-inflation').value=c.inflation;if(c.iwr)$('i-iwr').value=c.iwr;if(c.upper)$('i-upper').value=c.upper;if(c.lower)$('i-lower').value=c.lower;if(c.death)$('i-death').value=c.death;if(c.remain!==undefined)$('i-remain').value=c.remain;if(c.mode)applyMode(c.mode,false);if(c.sigma)$('i-sigma').value=c.sigma;}catch(_){}}
+  function applyGist(g){try{const c=JSON.parse(g.files[GF].content);if(c.age)$('i-age').value=c.age;if(c.savings)$('i-savings').value=c.savings;if(c.ret)$('i-return').value=+c.ret>=1?c.ret:10;if(c.inflation!==undefined)$('i-inflation').value=c.inflation;if(c.iwr)$('i-iwr').value=c.iwr;if(c.upper)$('i-upper').value=c.upper;if(c.lower)$('i-lower').value=c.lower;if(c.death)$('i-death').value=c.death;if(c.remain!==undefined)$('i-remain').value=c.remain;if(c.mode)applyMode(c.mode,false);if(c.sigma)$('i-sigma').value=c.sigma;}catch(_){}}
   async function pushGist(cfg){if(!S.pat)return;setBadge(t('syncing'));const body={description:'Withdrawal Planner — settings',public:false,files:{[GF]:{content:JSON.stringify(cfg,null,2)}}};const url=S.gistId?`/gists/${S.gistId}`:'/gists';const method=S.gistId?'PATCH':'POST';const r=await ghFetch(S.pat,url,{method,body:JSON.stringify(body)});if(r.ok){const g=await r.json();S.gistId=g.id;ls('fire_gist_id',g.id);setBadge(t('synced'),'ok');}else setBadge(t('syncFailed'),'bad');}
   async function pullGist(){try{setBadge(t('syncing'));const r=await ghFetch(S.pat,`/gists/${S.gistId}`);if(!r.ok){setBadge('');return;}applyGist(await r.json());syncSliderDisplays();calc();setBadge(t('synced'),'ok');}catch(_){setBadge('');}}
 
