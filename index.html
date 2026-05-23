@@ -873,10 +873,6 @@
 
   function renderVpwSummaryMC(inp, mc) {
     const el = $('mode-extra'); if (!el) return;
-    if (inp.ret <= 0) {
-      el.innerHTML = `<div class="banner warning">${t('vpwLowReturn')}</div>`;
-      return;
-    }
     // wdPercentiles[year] = [p5, p25, p50, p75, p95]
     const P25 = 1, P50 = 2;
     const horizon = mc.horizon;
