@@ -89,6 +89,14 @@
     .mode-btn:hover { color: #aaa; }
     .mode-btn.active { background: var(--border2); color: var(--text); }
 
+    .preset-btn { background: none; border: 1px solid var(--border2); color: var(--muted2); padding: 3px 9px; font-size: 0.62rem; letter-spacing: 0.04em; cursor: pointer; border-radius: 3px; transition: all 0.15s; white-space: nowrap; font-family: inherit; }
+    .preset-btn:hover { color: var(--muted); border-color: #444; }
+    .preset-btn.active { background: var(--border2); color: var(--accent); border-color: var(--border2); }
+    .mc-legend { display: flex; gap: 14px; flex-wrap: wrap; }
+    .mc-leg-item { display: flex; align-items: center; gap: 5px; font-size: 0.68rem; color: var(--muted); }
+    .mc-leg-swatch { display: inline-block; width: 14px; height: 8px; border-radius: 2px; }
+    .mc-leg-line   { display: inline-block; width: 14px; height: 2px; border-radius: 1px; background: var(--accent); }
+
     .result-main { font-size: 2.6rem; font-weight: 200; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; margin-bottom: 4px; line-height: 1; }
     .result-sub-row { display: flex; align-items: center; gap: 6px; margin-bottom: 20px; }
     .result-sub { font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; }
@@ -323,6 +331,43 @@
       </div>
     </div>
 
+    <!-- Monte Carlo section -->
+    <div class="chart-wrap hidden" id="mc-wrap">
+      <div class="chart-header" style="align-items:flex-start">
+        <div>
+          <div class="chart-title" id="mc-title-el"></div>
+          <p id="mc-desc-text" style="font-size:0.68rem;color:var(--muted2);margin-top:4px;line-height:1.5"></p>
+        </div>
+        <div style="text-align:right;flex-shrink:0;margin-left:16px">
+          <div id="mc-success-val" style="font-size:1.8rem;font-weight:200;line-height:1;font-variant-numeric:tabular-nums"></div>
+          <div id="mc-success-lbl" style="font-size:0.65rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted)"></div>
+        </div>
+      </div>
+      <div style="padding:0 6px 14px;border-bottom:1px solid var(--border);margin-bottom:16px">
+        <div class="label-row" style="margin-bottom:6px">
+          <label class="form-label" id="label-sigma"></label>
+          <button class="tip-btn" data-tip="sigma">?</button>
+        </div>
+        <div id="sigma-presets" style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px">
+          <button class="preset-btn" data-val="8"  onclick="setSigma(8)"  id="preset-conservative"></button>
+          <button class="preset-btn" data-val="15" onclick="setSigma(15)">VT &nbsp;15%</button>
+          <button class="preset-btn" data-val="18" onclick="setSigma(18)">0050 &nbsp;18%</button>
+        </div>
+        <div class="slider-row">
+          <input type="range" id="i-sigma" min="3" max="35" step="0.5" value="15">
+          <span class="slider-val" id="v-sigma">15%</span>
+        </div>
+      </div>
+      <div class="mc-legend" style="padding:0 6px;margin-bottom:10px">
+        <span class="mc-leg-item"><span class="mc-leg-swatch" style="background:var(--accent);opacity:0.22"></span> <span id="mc-leg-outer"></span></span>
+        <span class="mc-leg-item"><span class="mc-leg-swatch" style="background:var(--accent);opacity:0.45"></span> <span id="mc-leg-inner"></span></span>
+        <span class="mc-leg-item"><span class="mc-leg-line"></span> <span id="mc-leg-med"></span></span>
+      </div>
+      <svg id="mc-port-svg" class="chart-svg" viewBox="0 0 800 200" xmlns="http://www.w3.org/2000/svg"></svg>
+      <div id="mc-wd-header" class="hidden" style="margin-top:18px;font-size:0.65rem;font-weight:600;letter-spacing:0.16em;text-transform:uppercase;color:var(--muted);padding:0 6px;margin-bottom:10px"></div>
+      <svg id="mc-wd-svg" class="chart-svg hidden" viewBox="0 0 800 200" xmlns="http://www.w3.org/2000/svg"></svg>
+    </div>
+
   </div>
 </div>
 
@@ -398,6 +443,16 @@
       thVpwRate:          'VPW %',
       gFirstYear:         'Year 1 income',
       gMinYear:           'Lowest year',
+      labelSigma:         'Annual Volatility (σ)',
+      presetConservative: 'Conservative 8%',
+      mcTitle:            'Monte Carlo · 500 Simulations',
+      mcSuccessRate:      'Success Rate',
+      mcDesc:             'Bands show 5th / 25th / 50th / 75th / 95th percentile portfolio outcomes across 500 simulations with the given volatility.',
+      mcVpwNote:          'VPW adjusts to market — portfolio never depletes. Spending fan chart shown below.',
+      mcSpendTitle:       'Annual Spending Distribution (VPW)',
+      mcLegOuter:         '5th – 95th',
+      mcLegInner:         '25th – 75th',
+      mcLegMed:           'Median',
       syncing:            'syncing…',
       synced:             'synced ✓',
       syncFailed:         'sync failed',
@@ -468,6 +523,16 @@
       thVpwRate:          'VPW%',
       gFirstYear:         '第一年收入',
       gMinYear:           '最低年份',
+      labelSigma:         '年化波動度 (σ)',
+      presetConservative: '保守配置 8%',
+      mcTitle:            'Monte Carlo · 500 次模擬',
+      mcSuccessRate:      '成功率',
+      mcDesc:             '色帶顯示 500 次模擬中，投資組合結果的 5th / 25th / 50th / 75th / 95th 百分位。',
+      mcVpwNote:          'VPW 自動調整提領，投資組合永不耗盡。下方顯示支出分布。',
+      mcSpendTitle:       '年度支出分布（VPW）',
+      mcLegOuter:         '5th – 95th',
+      mcLegInner:         '25th – 75th',
+      mcLegMed:           '中位數',
       syncing:            '同步中…',
       synced:             '已同步 ✓',
       syncFailed:         '同步失敗',
@@ -509,6 +574,10 @@
       en: { title: 'Lower Guardrail', body: 'If your portfolio grows and your withdrawal rate falls below IWR × (1 − lower%), raise spending by 10%. Example: IWR 5%, lower −20% → triggers at 4%.' },
       zh: { title: '下限護欄', body: '若投資組合增值導致提領率低於 IWR × (1 − 下限%)，提高支出 10%。例如：IWR 5%，下限 −20% → 在 4% 時觸發。' }
     },
+    sigma: {
+      en: { title: 'Annual Volatility (σ)', body: 'Standard deviation of annual real returns. Global stock funds (VT) ≈ 15%; Taiwan 0050 ≈ 18%; a bond-heavy portfolio ≈ 8–10%. Higher σ = wider fan chart = more uncertain outcomes.' },
+      zh: { title: '年化波動度 (σ)', body: '年實質報酬率的標準差。全球股票基金（VT）約 15%；台灣 0050 約 18%；保守/債券型組合約 8–10%。σ 越高，扇形圖越寬，結果越不確定。' }
+    },
   };
 
   function applyLang() {
@@ -545,6 +614,13 @@
     $('chart-table-title').textContent = t('chartTable');
     $('scen-stress').textContent = t('scenStress');
     $('scen-base').textContent   = t('scenBase');
+
+    $('mc-title-el').textContent       = t('mcTitle');
+    $('label-sigma').textContent       = t('labelSigma');
+    $('preset-conservative').textContent = t('presetConservative');
+    $('mc-leg-outer').textContent      = t('mcLegOuter');
+    $('mc-leg-inner').textContent      = t('mcLegInner');
+    $('mc-leg-med').textContent        = t('mcLegMed');
 
     syncSliderDisplays();
     if (!$('s-main').classList.contains('hidden')) calc();
@@ -601,7 +677,8 @@
         if (c.lower)  $('i-lower').value   = c.lower;
         if (c.death)  $('i-death').value   = c.death;
         if (c.remain !== undefined) $('i-remain').value = c.remain;
-        if (c.mode) MODE = c.mode;
+        if (c.mode)  MODE = c.mode;
+        if (c.sigma) $('i-sigma').value = c.sigma;
       } catch(_) {}
     }
 
@@ -683,10 +760,27 @@
     $('v-upper').textContent     = '+' + $('i-upper').value + '%';
     $('v-lower').textContent     = '-' + $('i-lower').value + '%';
     $('v-death').textContent     = $('i-death').value;
+    $('v-sigma').textContent     = $('i-sigma').value + '%';
+    updateSigmaPresets();
+  }
+
+  function updateSigmaPresets() {
+    const val = +$('i-sigma').value;
+    document.querySelectorAll('.preset-btn').forEach(btn => {
+      btn.classList.toggle('active', +btn.dataset.val === val);
+    });
+  }
+
+  function setSigma(val) {
+    $('i-sigma').value = val;
+    syncSliderDisplays();
+    calc();
+    scheduleSave();
   }
 
   ['i-age','i-savings','i-return','i-inflation','i-iwr','i-upper','i-lower','i-death','i-remain']
     .forEach(id => $(id).addEventListener('input', () => { syncSliderDisplays(); calc(); scheduleSave(); }));
+  $('i-sigma').addEventListener('input', () => { syncSliderDisplays(); calc(); scheduleSave(); });
 
   function scheduleSave() { clearTimeout(saveTimer); saveTimer = setTimeout(persist, 1200); }
   $('sync-btn').onclick = () => { if (S.pat && S.gistId) pullGist(); };
@@ -704,6 +798,7 @@
       lower:     Math.max(1,    +$('i-lower').value    || 20),
       deathAge:  Math.max(50,   +$('i-death').value    || 85),
       remain:    Math.max(0,    +$('i-remain').value   || 0),
+      sigma:     Math.max(0.01, +$('i-sigma').value    || 15) / 100,
     };
   }
 
@@ -848,11 +943,13 @@
       $('decu-chart-wrap').classList.remove('hidden');
       drawChartEmpty('decu-svg');
       $('table-wrap').classList.add('hidden');
+      $('mc-wrap').classList.add('hidden');
       return;
     }
     if (MODE === 'fixed') calcFixed(inp);
     else if (MODE === 'guardrails') calcGuardrails(inp);
     else calcVpw(inp);
+    renderMCResults(runMonteCarlo(inp), inp);
   }
 
   function calcFixed(inp) {
@@ -863,6 +960,7 @@
       $('results-content').innerHTML = `<div class="banner warning">${t('bannerNegativePmt')}</div>`;
       $('decu-chart-wrap').classList.add('hidden');
       $('table-wrap').classList.add('hidden');
+      $('mc-wrap').classList.add('hidden');
       return;
     }
 
@@ -1073,14 +1171,137 @@
     $(id).innerHTML = `<text x="400" y="100" text-anchor="middle" fill="#888" font-size="13" font-family="sans-serif">${t('chartAdjust')}</text>`;
   }
 
+  // ── Monte Carlo ───────────────────────────────────
+
+  function boxMuller() {
+    let u; do { u = Math.random(); } while (u === 0);
+    return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * Math.random());
+  }
+
+  function runMonteCarlo(inp, N = 500) {
+    const horizon  = Math.max(1, Math.round(inp.deathAge - inp.age));
+    const sigma    = inp.sigma;
+    const logMean  = Math.log(1 + inp.ret);  // inp.ret is geometric mean (CAGR)
+    const pmt      = MODE === 'fixed' ? calcPMT(inp.savings, inp.ret, horizon, inp.remain) : 0;
+    const iwr      = inp.iwr;
+    const ut       = iwr * (1 + inp.upper / 100);
+    const lt       = iwr * (1 - inp.lower / 100);
+
+    const portByYear = Array.from({length: horizon + 1}, (_, y) =>
+      y === 0 ? Array(N).fill(inp.savings) : []);
+    const wdByYear = Array.from({length: horizon + 1}, () => []);
+
+    let successes = 0;
+
+    for (let sim = 0; sim < N; sim++) {
+      let port = inp.savings, spend = inp.savings * iwr, depleted = false;
+      for (let y = 1; y <= horizon; y++) {
+        const r = Math.exp(logMean + sigma * boxMuller()) - 1;
+        let wd;
+        if (MODE === 'fixed') {
+          const ps = port * (1 + r);
+          wd = Math.min(Math.max(0, pmt), ps);
+          port = Math.max(0, ps - wd);
+        } else if (MODE === 'guardrails') {
+          const ps = port * (1 + r);
+          const cr = ps > 0 ? spend / ps : Infinity;
+          if (cr > ut) spend *= 0.90; else if (cr < lt) spend *= 1.10;
+          wd = Math.min(spend, ps);
+          port = Math.max(0, ps - wd);
+        } else {
+          const n = horizon - y + 1;
+          wd = port * vpwRate(n, inp.ret);
+          port = Math.max(0, (port - wd) * (1 + r));
+        }
+        // Only count as depleted if it happens before the final year
+        // (VPW reaching $0 at the last year is the intended "die with zero" outcome)
+        if (port <= 0.01 && y < horizon && !depleted) { depleted = true; port = 0; }
+        portByYear[y].push(port);
+        if (MODE === 'vpw') wdByYear[y].push(wd);
+      }
+      if (!depleted && port >= inp.remain) successes++;
+    }
+
+    const pcts = [5, 25, 50, 75, 95];
+    const computePct = arr => {
+      if (!arr.length) return [0, 0, 0, 0, 0];
+      const s = [...arr].sort((a, b) => a - b);
+      return pcts.map(p => s[Math.min(s.length - 1, Math.floor(p / 100 * s.length))]);
+    };
+
+    return {
+      successRate:     successes / N,
+      portPercentiles: portByYear.map(computePct),
+      wdPercentiles:   MODE === 'vpw' ? wdByYear.map(computePct) : null,
+      horizon, N,
+    };
+  }
+
+  function drawFanChart(svgId, clipId, percentiles, horizon, maxV) {
+    if (maxV <= 0) maxV = 1;
+    const xS = v => DPL + (v / horizon) * DIW;
+    const yS = v => DPT + DIH - (Math.max(0, v) / maxV) * DIH;
+    let gl = '', yl = '';
+    for (let i = 0; i <= 4; i++) {
+      const v = maxV * i / 4, y = yS(v);
+      gl += `<line x1="${DPL}" y1="${y}" x2="${DPL+DIW}" y2="${y}" stroke="#1a1a1a" stroke-width="1"/>`;
+      yl += `<text x="${DPL-8}" y="${y+4}" text-anchor="end" fill="#888" font-size="10">${fmtMoney(v)}</text>`;
+    }
+    let xl = ''; const step = horizon <= 20 ? 5 : horizon <= 40 ? 10 : 15;
+    for (let yr = 0; yr <= horizon; yr += step)
+      xl += `<text x="${xS(yr)}" y="${DPT+DIH+18}" text-anchor="middle" fill="#888" font-size="10">${t('chartYrPfx')} ${yr}</text>`;
+    const Y = percentiles.length;
+    const years = Array.from({length: Y}, (_, i) => i);
+    const band = (hi, lo) =>
+      years.map(y => `${xS(y)},${yS(percentiles[y][hi])}`).join(' ') + ' ' +
+      [...years].reverse().map(y => `${xS(y)},${yS(percentiles[y][lo])}`).join(' ');
+    const med = years.map(y => `${xS(y)},${yS(percentiles[y][2])}`).join(' ');
+    $(svgId).innerHTML =
+      `<clipPath id="${clipId}"><rect x="${DPL}" y="${DPT}" width="${DIW}" height="${DIH}"/></clipPath>` +
+      gl + yl + xl +
+      `<g clip-path="url(#${clipId})">` +
+      `<polygon points="${band(4,0)}" fill="#c8a96e" opacity="0.10"/>` +
+      `<polygon points="${band(3,1)}" fill="#c8a96e" opacity="0.25"/>` +
+      `<polyline points="${med}" fill="none" stroke="#c8a96e" stroke-width="2" stroke-linejoin="round"/>` +
+      `</g>` +
+      `<line x1="${DPL}" y1="${DPT}" x2="${DPL}" y2="${DPT+DIH}" stroke="#2a2a2a" stroke-width="1"/>` +
+      `<line x1="${DPL}" y1="${DPT+DIH}" x2="${DPL+DIW}" y2="${DPT+DIH}" stroke="#2a2a2a" stroke-width="1"/>`;
+  }
+
+  function renderMCResults(mc, inp) {
+    const { successRate, portPercentiles, wdPercentiles, horizon, N } = mc;
+    const pct = Math.round(successRate * 100);
+    const col = pct >= 90 ? 'var(--green)' : pct >= 75 ? 'var(--accent)' : 'var(--red)';
+    $('mc-success-val').textContent = pct + '%';
+    $('mc-success-val').style.color = col;
+    $('mc-success-lbl').textContent = t('mcSuccessRate');
+    $('mc-desc-text').textContent   = MODE === 'vpw' ? t('mcVpwNote') : t('mcDesc');
+
+    const maxPort = Math.max(inp.savings * 1.05, ...portPercentiles.map(p => p[4]), 1);
+    drawFanChart('mc-port-svg', 'mcp', portPercentiles, horizon, maxPort);
+
+    if (MODE === 'vpw' && wdPercentiles) {
+      const maxWd = Math.max(...wdPercentiles.slice(1).map(p => p[4]), 1);
+      drawFanChart('mc-wd-svg', 'mcw', wdPercentiles, horizon, maxWd * 1.1);
+      $('mc-wd-header').textContent = t('mcSpendTitle');
+      $('mc-wd-header').classList.remove('hidden');
+      $('mc-wd-svg').classList.remove('hidden');
+    } else {
+      $('mc-wd-header').classList.add('hidden');
+      $('mc-wd-svg').classList.add('hidden');
+    }
+
+    $('mc-wrap').classList.remove('hidden');
+  }
+
   // ── Gist / Persist ────────────────────────────────
   function ghFetch(p,path,o={}){return fetch(API+path,{...o,headers:{'Authorization':`token ${p}`,'Content-Type':'application/json',...(o.headers||{})}});}
   async function findGist(p){for(let pg=1;;pg++){const r=await ghFetch(p,`/gists?per_page=100&page=${pg}`);if(!r.ok)return null;const l=await r.json();const h=l.find(g=>g.files[GF]);if(h){const f=await ghFetch(p,`/gists/${h.id}`);return f.ok?f.json():null;}if(l.length<100)return null;}}
-  function applyGist(g){try{const c=JSON.parse(g.files[GF].content);if(c.age)$('i-age').value=c.age;if(c.savings)$('i-savings').value=c.savings;if(c.ret)$('i-return').value=c.ret;if(c.inflation!==undefined)$('i-inflation').value=c.inflation;if(c.iwr)$('i-iwr').value=c.iwr;if(c.upper)$('i-upper').value=c.upper;if(c.lower)$('i-lower').value=c.lower;if(c.death)$('i-death').value=c.death;if(c.remain!==undefined)$('i-remain').value=c.remain;if(c.mode)applyMode(c.mode,false);}catch(_){}}
+  function applyGist(g){try{const c=JSON.parse(g.files[GF].content);if(c.age)$('i-age').value=c.age;if(c.savings)$('i-savings').value=c.savings;if(c.ret)$('i-return').value=c.ret;if(c.inflation!==undefined)$('i-inflation').value=c.inflation;if(c.iwr)$('i-iwr').value=c.iwr;if(c.upper)$('i-upper').value=c.upper;if(c.lower)$('i-lower').value=c.lower;if(c.death)$('i-death').value=c.death;if(c.remain!==undefined)$('i-remain').value=c.remain;if(c.mode)applyMode(c.mode,false);if(c.sigma)$('i-sigma').value=c.sigma;}catch(_){}}
   async function pushGist(cfg){if(!S.pat)return;setBadge(t('syncing'));const body={description:'Withdrawal Planner — settings',public:false,files:{[GF]:{content:JSON.stringify(cfg,null,2)}}};const url=S.gistId?`/gists/${S.gistId}`:'/gists';const method=S.gistId?'PATCH':'POST';const r=await ghFetch(S.pat,url,{method,body:JSON.stringify(body)});if(r.ok){const g=await r.json();S.gistId=g.id;ls('fire_gist_id',g.id);setBadge(t('synced'),'ok');}else setBadge(t('syncFailed'),'bad');}
   async function pullGist(){try{setBadge(t('syncing'));const r=await ghFetch(S.pat,`/gists/${S.gistId}`);if(!r.ok){setBadge('');return;}applyGist(await r.json());syncSliderDisplays();calc();setBadge(t('synced'),'ok');}catch(_){setBadge('');}}
 
-  function persist(){const i=getInputs();const c={age:i.age,savings:i.savings,ret:$('i-return').value,inflation:$('i-inflation').value,iwr:$('i-iwr').value,upper:$('i-upper').value,lower:$('i-lower').value,death:$('i-death').value,remain:i.remain,mode:MODE};ls('fire_cfg',JSON.stringify(c));if(S.pat)pushGist(c);}
+  function persist(){const i=getInputs();const c={age:i.age,savings:i.savings,ret:$('i-return').value,inflation:$('i-inflation').value,iwr:$('i-iwr').value,upper:$('i-upper').value,lower:$('i-lower').value,death:$('i-death').value,remain:i.remain,mode:MODE,sigma:$('i-sigma').value};ls('fire_cfg',JSON.stringify(c));if(S.pat)pushGist(c);}
   function ls(k,v){if(v===undefined)return localStorage.getItem(k);if(v===null)localStorage.removeItem(k);else localStorage.setItem(k,v);}
   function setBadge(txt,cls=''){const e=$('sync-badge');e.textContent=txt;e.className='sync-badge'+(cls?' '+cls:'');}
   function fmtMoney(n){if(!isFinite(n)||isNaN(n))return'—';if(n>=1e6)return'$'+(n/1e6).toFixed(2).replace(/\.?0+$/,'')+'M';if(n>=1e4)return'$'+Math.round(n/1e3)+'K';if(n>=1e3)return'$'+(n/1e3).toFixed(1).replace(/\.0$/,'')+'K';return'$'+Math.round(n).toLocaleString();}
