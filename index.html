@@ -14,7 +14,7 @@
       --border2: #2a2a2a;
       --text:    #e8e8e8;
       --muted:   #777;
-      --muted2:  #4a4a4a;
+      --muted2:  #666;
       --accent:  #c8a96e;
       --green:   #4a8c4a;
       --red:     #8c4a4a;
@@ -24,7 +24,7 @@
     .hidden { display: none !important; }
 
     .lang-toggle { position: fixed; top: 20px; right: 20px; display: flex; border: 1px solid var(--border2); border-radius: 4px; overflow: hidden; z-index: 200; }
-    .lang-btn { background: none; border: none; color: #555; font-size: 0.68rem; font-weight: 500; letter-spacing: 0.06em; padding: 5px 10px; cursor: pointer; transition: color 0.15s, background 0.15s; }
+    .lang-btn { background: none; border: none; color: var(--muted); font-size: 0.68rem; font-weight: 500; letter-spacing: 0.06em; padding: 5px 10px; cursor: pointer; transition: color 0.15s, background 0.15s; }
     .lang-btn + .lang-btn { border-left: 1px solid var(--border2); }
     .lang-btn.active { background: var(--border2); color: var(--accent); }
     .lang-btn:hover:not(.active) { color: #888; }
@@ -1062,7 +1062,7 @@
       const ty = DPT + 8;
 
       h += `<rect x="${tx}" y="${ty}" width="${tw}" height="${th}" rx="3" fill="#1c1c1c" stroke="#3a3a3a" stroke-width="1"/>`;
-      h += `<text x="${tx+8}" y="${ty+14}" fill="#555" font-size="9" font-family="${ff}">${yrTxt}</text>`;
+      h += `<text x="${tx+8}" y="${ty+14}" fill="#888" font-size="9" font-family="${ff}">${yrTxt}</text>`;
 
       if (yr === 0) {
         h += `<text x="${tx+8}" y="${ty+30}" fill="#888" font-size="9" font-family="${ff}">Portfolio</text>`;
