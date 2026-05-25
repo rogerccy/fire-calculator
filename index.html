@@ -1034,10 +1034,12 @@
       <div class="g-card"><div class="g-card-title">${t('scenBase')} (${(inp.ret*100).toFixed(1)}%)</div>
         <div class="g-card-row"><span>${t('gFinalPort')}</span><span>${b.depleted?t('gDepleted'):fmtMoney(b.finalPort)}</span></div>
         <div class="g-card-row"><span>${t('gCuts')}</span><span>${b.cuts}</span></div>
+        <div class="g-card-row"><span>${t('gRaises')}</span><span>${b.raises}</span></div>
         <div class="g-card-row"><span>${t('gMinSpend')}</span><span>${fmtMoney(b.minSpend)}/yr</span></div></div>
       <div class="g-card"><div class="g-card-title">${t('scenStress')} (${(sr*100).toFixed(1)}%)</div>
         <div class="g-card-row"><span>${t('gFinalPort')}</span><span style="color:${s.depleted?'#c07070':'inherit'}">${s.depleted?t('gDepleted'):fmtMoney(s.finalPort)}</span></div>
         <div class="g-card-row"><span>${t('gCuts')}</span><span style="color:${s.cuts>0?'#c07070':'inherit'}">${s.cuts}</span></div>
+        <div class="g-card-row"><span>${t('gRaises')}</span><span>${s.raises}</span></div>
         <div class="g-card-row"><span>${t('gMinSpend')}</span><span style="color:${s.cuts>0?'#c07070':'inherit'}">${fmtMoney(s.minSpend)}/yr</span></div></div>
     </div>`;
   }
