@@ -280,11 +280,11 @@
         <div id="fixed-inputs">
           <div class="input-row" style="margin-bottom:0">
             <div class="label-row">
-              <label class="form-label" id="label-remain"></label>
-              <button class="tip-btn" data-tip="remain">?</button>
+              <label class="form-label" id="label-withdraw"></label>
+              <button class="preset-btn active" id="auto-withdraw-btn" onclick="toggleAutoWithdraw()" style="margin-left:auto;font-size:0.6rem;padding:2px 7px"></button>
             </div>
             <div class="input-with-prefix"><span class="input-prefix">$</span>
-              <input type="number" id="i-remain" min="0" step="10000" value="0">
+              <input type="number" id="i-withdraw" min="0" step="1000" value="0" disabled style="opacity:0.5">
             </div>
           </div>
         </div>
@@ -383,7 +383,8 @@
       labelReturn:        'Expected Annual Return (Nominal)',
       labelInflation:     'Inflation Rate',
       labelDeath:         'Expected Death Age',
-      labelRemain:        'Target Remaining at Death',
+      labelWithdraw:      'Annual Withdrawal',
+      autoBtn:            'Auto',
       labelIwr:           'Initial Withdrawal Rate',
       labelUpper:         'Upper Guardrail',
       labelLower:         'Lower Guardrail',
@@ -412,9 +413,7 @@
       horizonLabel:       'Retirement Horizon',
       yearsLabel:         'yrs',
       portfolioLabel:     'Starting Portfolio',
-      targetRemain:       'Target Remaining',
       bannerEmpty:        'Enter your portfolio to see projections.',
-      bannerNegativePmt:  'Target remaining exceeds what the portfolio can grow to — reduce the target or lower the return assumption.',
       gFinalPort:         'Final portfolio',
       gCuts:              'Cuts triggered',
       gRaises:            'Raises triggered',
@@ -469,7 +468,8 @@
       labelReturn:        '預期年化報酬率（名目）',
       labelInflation:     '通膨率',
       labelDeath:         '預期死亡年齡',
-      labelRemain:        '預期留存金額',
+      labelWithdraw:      '年提領金額',
+      autoBtn:            '自動',
       labelIwr:           '初始提領率',
       labelUpper:         '上限護欄',
       labelLower:         '下限護欄',
@@ -498,9 +498,7 @@
       horizonLabel:       '退休期間',
       yearsLabel:         '年',
       portfolioLabel:     '起始投資組合',
-      targetRemain:       '目標留存金額',
       bannerEmpty:        '請輸入投資組合以查看預測。',
-      bannerNegativePmt:  '目標留存金額超過投資組合的成長上限——請降低目標或調整報酬率假設。',
       gFinalPort:         '最終投資組合',
       gCuts:              '削減次數',
       gRaises:            '提高次數',
@@ -552,12 +550,12 @@
       zh: { title: '通膨率', body: '每年物價上漲的比率。從名目報酬率中減去，得到模擬使用的實質報酬率；同時用於將今日幣值的提領金額換算成每年實際需提領的名目金額。長期通膨通常為 2–3%。' }
     },
     death: {
-      en: { title: 'Expected Death Age', body: 'The age at which your portfolio should reach the target remaining balance. Match this with your Life Clock app setting for consistency.' },
+      en: { title: 'Expected Death Age', body: 'The age your portfolio simulation runs to. Match this with your Life Clock app setting for consistency.' },
       zh: { title: '預期死亡年齡', body: '投資組合應達到目標留存金額的年齡。建議與 Life Clock 的設定保持一致。' }
     },
-    remain: {
-      en: { title: 'Target Remaining at Death', body: 'The portfolio balance you want left at your expected death age. $0 = Die With Zero. Set higher to leave a bequest or safety buffer. The fixed annual withdrawal is calculated to hit this target exactly.' },
-      zh: { title: '預期留存金額', body: '在預期死亡年齡時，希望投資組合剩餘的金額。$0 為歸零而終。設為較高金額可作為遺產或安全緩衝。固定年提領金額會精確計算以達到此目標。' }
+    withdraw: {
+      en: { title: 'Annual Withdrawal', body: 'The inflation-adjusted amount you plan to spend each year in today\'s dollars.\n\nAuto: calculated automatically so the portfolio lasts exactly to your target age.\n\nManual: enter your own target spending to see the Monte Carlo success rate for that amount.' },
+      zh: { title: '年提領金額', body: '以今日幣值計算，每年計畫花費的金額（已調整通膨）。\n\n自動：自動計算使投資組合剛好撐到目標年齡。\n\n手動：輸入你的目標花費，查看 Monte Carlo 成功率。' }
     },
     iwr: {
       en: { title: 'Initial Withdrawal Rate', body: 'The percentage of your portfolio you withdraw in year one. The guardrails strategy then adjusts spending up or down each year based on how your portfolio performs relative to this starting rate.' },
@@ -610,7 +608,8 @@
     $('label-return').textContent    = t('labelReturn');
     $('label-inflation').textContent = t('labelInflation');
     $('label-death').textContent     = t('labelDeath');
-    $('label-remain').textContent    = t('labelRemain');
+    $('label-withdraw').textContent   = t('labelWithdraw');
+    $('auto-withdraw-btn').textContent = t('autoBtn');
     $('label-iwr').textContent       = t('labelIwr');
     $('label-upper').textContent     = t('labelUpper');
     $('label-lower').textContent     = t('labelLower');
@@ -660,8 +659,17 @@
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closeTip(); });
 
   const S = { pat: null, gistId: null, lang: 'en' };
-  let saveTimer = null, MODE = 'fixed';
+  let saveTimer = null, MODE = 'fixed', autoWithdraw = true;
   let lastBaseRows = [], lastStressRows = [];
+
+  function toggleAutoWithdraw() {
+    autoWithdraw = !autoWithdraw;
+    $('auto-withdraw-btn').classList.toggle('active', autoWithdraw);
+    $('i-withdraw').disabled = autoWithdraw;
+    $('i-withdraw').style.opacity = autoWithdraw ? '0.5' : '1';
+    calc();
+    scheduleSave();
+  }
 
   function boot() {
     S.pat    = ls('fire_pat');
@@ -681,7 +689,8 @@
         if (c.upper)  $('i-upper').value   = c.upper;
         if (c.lower)  $('i-lower').value   = c.lower;
         if (c.death)  $('i-death').value   = c.death;
-        if (c.remain !== undefined) $('i-remain').value = c.remain;
+        if (c.withdraw) $('i-withdraw').value = c.withdraw;
+        if (c.autoWithdraw !== undefined) { autoWithdraw = c.autoWithdraw; $('auto-withdraw-btn').classList.toggle('active', autoWithdraw); $('i-withdraw').disabled = autoWithdraw; $('i-withdraw').style.opacity = autoWithdraw ? '0.5' : '1'; }
         if (c.mode)  MODE = c.mode;
         if (c.sigma) $('i-sigma').value = c.sigma;
       } catch(_) {}
@@ -767,9 +776,10 @@
     scheduleSave();
   }
 
-  ['i-age','i-savings','i-return','i-inflation','i-iwr','i-upper','i-lower','i-death','i-remain']
+  ['i-age','i-savings','i-return','i-inflation','i-iwr','i-upper','i-lower','i-death']
     .forEach(id => $(id).addEventListener('input', () => { syncSliderDisplays(); calc(); scheduleSave(); }));
   $('i-sigma').addEventListener('input', () => { syncSliderDisplays(); calc(); scheduleSave(); });
+  $('i-withdraw').addEventListener('input', () => { if (!autoWithdraw) { calc(); scheduleSave(); } });
 
   function scheduleSave() { clearTimeout(saveTimer); saveTimer = setTimeout(persist, 1200); }
   $('sync-btn').onclick = () => { if (S.pat && S.gistId) pullGist(); };
@@ -786,7 +796,6 @@
       upper:     Math.max(1,    +$('i-upper').value    || 20),
       lower:     Math.max(1,    +$('i-lower').value    || 20),
       deathAge:  Math.max(50,   +$('i-death').value    || 85),
-      remain:    Math.max(0,    +$('i-remain').value   || 0),
       sigma:     Math.max(0.01, +$('i-sigma').value    || 15) / 100,
     };
   }
@@ -930,17 +939,20 @@
 
   function calcFixed(inp) {
     const horizon = Math.max(1, Math.round(inp.deathAge - inp.age));
-    const pmt = calcPMT(inp.savings, inp.ret, horizon, inp.remain);
-
+    let pmt;
+    if (autoWithdraw) {
+      pmt = calcPMT(inp.savings, inp.ret, horizon, 0);
+      $('i-withdraw').value = Math.round(pmt);
+    } else {
+      pmt = Math.max(0, +$('i-withdraw').value || 0);
+    }
     if (pmt <= 0) {
-      $('results-content').innerHTML = `<div class="banner warning">${t('bannerNegativePmt')}</div>`;
+      $('results-content').innerHTML = `<div class="banner warning">${t('bannerEmpty')}</div>`;
       $('success-rate-wrap').classList.add('hidden');
       $('decu-chart-wrap').classList.add('hidden');
       return false;
     }
-
     lastBaseRows = simulateFixed(inp.savings, pmt, inp.ret, horizon, inp.age);
-
     renderFixedResults(inp, pmt, horizon);
     renderFixedSummary(inp, lastBaseRows);
     return true;
@@ -967,7 +979,6 @@
     html += metric(t('monthlyLabel'), fmtMoney(monthly) + t('perMonth'));
     html += metric(t('horizonLabel'), `${horizon} ${t('yearsLabel')}`);
     html += metric(t('portfolioLabel'), fmtMoney(inp.savings));
-    if (inp.remain > 0) html += metric(t('targetRemain'), fmtMoney(inp.remain));
     html += `</div><div id="mode-extra"></div>`;
     $('results-content').innerHTML = html;
   }
@@ -1080,7 +1091,7 @@
     svg.appendChild(ov);
 
     const isVariable = MODE !== 'fixed';
-    const pmt = MODE === 'fixed' ? calcPMT(inp.savings, inp.ret, horizon, inp.remain) : 0;
+    const pmt = MODE === 'fixed' ? Math.max(0, +$('i-withdraw').value || 0) : 0;
     const ff = '-apple-system,sans-serif';
 
     ov.addEventListener('mousemove', e => {
@@ -1141,7 +1152,7 @@
     const horizon  = Math.max(1, Math.round(inp.deathAge - inp.age));
     const sigma    = inp.sigma;
     const logMean  = Math.log(1 + inp.ret);  // inp.ret is geometric mean (CAGR)
-    const pmt      = MODE === 'fixed' ? calcPMT(inp.savings, inp.ret, horizon, inp.remain) : 0;
+    const pmt      = MODE === 'fixed' ? Math.max(0, +$('i-withdraw').value || 0) : 0;
     const iwr      = inp.iwr;
     const ut       = iwr * (1 + inp.upper / 100);
     const lt       = iwr * (1 - inp.lower / 100);
@@ -1176,7 +1187,7 @@
         portByYear[y].push(port);
         wdByYear[y].push(wd);
       }
-      if (!depleted && port >= (MODE === 'fixed' ? inp.remain : 0)) successes++;
+      if (!depleted) successes++;
     }
 
     const pcts = [5, 25, 50, 75, 95];
@@ -1198,11 +1209,11 @@
   // ── Gist / Persist ────────────────────────────────
   function ghFetch(p,path,o={}){return fetch(API+path,{...o,headers:{'Authorization':`token ${p}`,'Content-Type':'application/json',...(o.headers||{})}});}
   async function findGist(p){for(let pg=1;;pg++){const r=await ghFetch(p,`/gists?per_page=100&page=${pg}`);if(!r.ok)return null;const l=await r.json();const h=l.find(g=>g.files[GF]);if(h){const f=await ghFetch(p,`/gists/${h.id}`);return f.ok?f.json():null;}if(l.length<100)return null;}}
-  function applyGist(g){try{const c=JSON.parse(g.files[GF].content);if(c.age)$('i-age').value=c.age;if(c.savings)$('i-savings').value=c.savings;if(c.ret)$('i-return').value=+c.ret>=1?c.ret:10;if(c.inflation!==undefined)$('i-inflation').value=c.inflation;if(c.iwr)$('i-iwr').value=c.iwr;if(c.upper)$('i-upper').value=c.upper;if(c.lower)$('i-lower').value=c.lower;if(c.death)$('i-death').value=c.death;if(c.remain!==undefined)$('i-remain').value=c.remain;if(c.mode)applyMode(c.mode,false);if(c.sigma)$('i-sigma').value=c.sigma;}catch(_){}}
+  function applyGist(g){try{const c=JSON.parse(g.files[GF].content);if(c.age)$('i-age').value=c.age;if(c.savings)$('i-savings').value=c.savings;if(c.ret)$('i-return').value=+c.ret>=1?c.ret:10;if(c.inflation!==undefined)$('i-inflation').value=c.inflation;if(c.iwr)$('i-iwr').value=c.iwr;if(c.upper)$('i-upper').value=c.upper;if(c.lower)$('i-lower').value=c.lower;if(c.death)$('i-death').value=c.death;if(c.withdraw)$('i-withdraw').value=c.withdraw;if(c.autoWithdraw!==undefined){autoWithdraw=c.autoWithdraw;$('auto-withdraw-btn').classList.toggle('active',autoWithdraw);$('i-withdraw').disabled=autoWithdraw;$('i-withdraw').style.opacity=autoWithdraw?'0.5':'1';}if(c.mode)applyMode(c.mode,false);if(c.sigma)$('i-sigma').value=c.sigma;}catch(_){}}
   async function pushGist(cfg){if(!S.pat)return;setBadge(t('syncing'));const body={description:'Withdrawal Planner — settings',public:false,files:{[GF]:{content:JSON.stringify(cfg,null,2)}}};const url=S.gistId?`/gists/${S.gistId}`:'/gists';const method=S.gistId?'PATCH':'POST';const r=await ghFetch(S.pat,url,{method,body:JSON.stringify(body)});if(r.ok){const g=await r.json();S.gistId=g.id;ls('fire_gist_id',g.id);setBadge(t('synced'),'ok');}else setBadge(t('syncFailed'),'bad');}
   async function pullGist(){try{setBadge(t('syncing'));const r=await ghFetch(S.pat,`/gists/${S.gistId}`);if(!r.ok){setBadge('');return;}applyGist(await r.json());syncSliderDisplays();calc();setBadge(t('synced'),'ok');}catch(_){setBadge('');}}
 
-  function persist(){const i=getInputs();const c={age:i.age,savings:i.savings,ret:$('i-return').value,inflation:$('i-inflation').value,iwr:$('i-iwr').value,upper:$('i-upper').value,lower:$('i-lower').value,death:$('i-death').value,remain:i.remain,mode:MODE,sigma:$('i-sigma').value};ls('fire_cfg',JSON.stringify(c));if(S.pat)pushGist(c);}
+  function persist(){const i=getInputs();const c={age:i.age,savings:i.savings,ret:$('i-return').value,inflation:$('i-inflation').value,iwr:$('i-iwr').value,upper:$('i-upper').value,lower:$('i-lower').value,death:$('i-death').value,withdraw:+$('i-withdraw').value||0,autoWithdraw:autoWithdraw,mode:MODE,sigma:$('i-sigma').value};ls('fire_cfg',JSON.stringify(c));if(S.pat)pushGist(c);}
   function ls(k,v){if(v===undefined)return localStorage.getItem(k);if(v===null)localStorage.removeItem(k);else localStorage.setItem(k,v);}
   function setBadge(txt,cls=''){const e=$('sync-badge');e.textContent=txt;e.className='sync-badge'+(cls?' '+cls:'');}
   function fmtMoney(n){if(!isFinite(n)||isNaN(n))return'—';if(n>=1e6)return'$'+(n/1e6).toFixed(2).replace(/\.?0+$/,'')+'M';if(n>=1e4)return'$'+Math.round(n/1e3)+'K';if(n>=1e3)return'$'+(n/1e3).toFixed(1).replace(/\.0$/,'')+'K';return'$'+Math.round(n).toLocaleString();}
