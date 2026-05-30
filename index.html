@@ -583,8 +583,8 @@
       zh: { title: '預期死亡年齡', body: '投資組合應達到目標留存金額的年齡。建議與 Life Clock 的設定保持一致。' }
     },
     withdraw: {
-      en: { title: 'Annual Withdrawal', body: 'The inflation-adjusted amount you plan to spend each year in today\'s dollars.\n\nAuto: calculated automatically so the portfolio lasts exactly to your target age.\n\nManual: enter your own target spending to see the Monte Carlo success rate for that amount.' },
-      zh: { title: '年提領金額', body: '以今日幣值計算，每年計畫花費的金額（已調整通膨）。\n\n自動：自動計算使投資組合剛好撐到目標年齡。\n\n手動：輸入你的目標花費，查看 Monte Carlo 成功率。' }
+      en: { title: 'Annual Withdrawal', body: 'Amount in today\'s dollars (real, inflation-adjusted). The actual cash transferred each year rises with inflation.\n\n<b>Auto</b> — uses the annuity-due formula: PMT = PV × (1+r)^n × r / ((1+r) × ((1+r)^n − 1)), where r = real return, n = years. Assumes returns hit the expected value exactly every year and targets exactly $0 at your death age. Good starting point; use Monte Carlo to see the range of outcomes.\n\n<b>Manual</b> — enter your own spending target and check the Monte Carlo success rate.' },
+      zh: { title: '年提領金額', body: '以今日幣值計算（實質，已調整通膨），每年實際轉帳的名目金額會隨通膨遞增。\n\n<b>自動</b> — 使用年金現值公式：PMT = PV × (1+r)^n × r / ((1+r) × ((1+r)^n − 1))，其中 r = 實質報酬率，n = 退休年數。假設每年報酬率恰好等於設定值，目標在死亡年齡剛好花光。只算一次後鎖定，不像 VPW 每年重算——可作為起始參考，再用 Monte Carlo 查看實際成功率範圍。\n\n<b>手動</b> — 輸入自訂花費，查看 Monte Carlo 成功率。' }
     },
     iwr: {
       en: { title: 'Initial Withdrawal Rate', body: 'The percentage of your portfolio you withdraw in year one. The guardrails strategy then adjusts spending up or down each year based on how your portfolio performs relative to this starting rate.' },
