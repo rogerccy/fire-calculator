@@ -238,7 +238,7 @@
               <button class="tip-btn" data-tip="ret">?</button>
             </div>
             <div class="slider-row">
-              <input type="range" id="i-return" min="1" max="15" step="0.5" value="10">
+              <input type="range" id="i-return" min="0" max="15" step="0.5" value="10">
               <span class="slider-val" id="v-return">10%</span>
             </div>
           </div>
@@ -248,7 +248,7 @@
               <button class="tip-btn" data-tip="sigma">?</button>
             </div>
             <div class="slider-row">
-              <input type="range" id="i-sigma" min="3" max="35" step="0.5" value="15">
+              <input type="range" id="i-sigma" min="0" max="35" step="0.5" value="15">
               <span class="slider-val" id="v-sigma">15%</span>
             </div>
           </div>
@@ -358,7 +358,13 @@
             <div class="chart-title" id="chart-decu-title"></div>
             <button class="tip-btn" data-tip="mc">?</button>
           </div>
-          <p id="chart-real-note" style="font-size:0.63rem;color:var(--muted2);margin-top:3px;letter-spacing:0.02em"></p>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:3px">
+          <p id="chart-real-note" style="font-size:0.63rem;color:var(--muted2);margin:0;letter-spacing:0.02em"></p>
+          <span style="display:inline-flex;gap:2px">
+            <button class="preset-btn active" id="btn-mode-real" onclick="setChartMode('real')" style="padding:2px 7px;font-size:0.58rem"></button>
+            <button class="preset-btn" id="btn-mode-nominal" onclick="setChartMode('nominal')" style="padding:2px 7px;font-size:0.58rem"></button>
+          </span>
+        </div>
         </div>
         <div class="mc-legend" id="chart-legend">
           <span class="mc-leg-item"><span class="mc-leg-swatch" style="background:var(--accent);opacity:0.22"></span> <span id="mc-leg-outer"></span></span>
@@ -460,6 +466,9 @@
       hoverWithdraw:      'Withdrawal (Jan 1)',
       hoverPortEnd:       'End Balance',
       chartRealNote:      'Amounts in today\'s dollars · inflation-adjusted',
+      chartNominalNote:   'Amounts in future dollars · nominal (not inflation-adjusted)',
+      chartModeReal:      'Real',
+      chartModeNominal:   'Nominal',
       syncing:            'syncing…',
       synced:             'synced ✓',
       syncFailed:         'sync failed',
@@ -545,6 +554,9 @@
       hoverWithdraw:      '年初提領',
       hoverPortEnd:       '期末資產',
       chartRealNote:      '金額均為今日幣值（實質，已扣除通膨）',
+      chartNominalNote:   '金額為未來名目幣值（含通膨，未調整）',
+      chartModeReal:      '實質',
+      chartModeNominal:   '名目',
       syncing:            '同步中…',
       synced:             '已同步 ✓',
       syncFailed:         '同步失敗',
@@ -595,8 +607,8 @@
       zh: { title: '報酬率預設值——資料來源', body: 'VT（2008–2025）：CAGR 8.2%，σ 17.8%。美元含息總報酬。資料來源：totalrealreturns.com。\n\n0050（2004–2025）：CAGR 11.8%，σ 23.4%。新台幣還原除權息。資料來源：havocfuture.tw。\n\n保守：債券型或均衡型投資組合概略估計值。' }
     },
     modes: {
-      en: { title: 'Withdrawal Strategies', body: '<b>Fixed</b> — same inflation-adjusted amount every year. Predictable; portfolio may deplete early if returns disappoint.\n\n<b>Guardrails</b> — starts at your target rate; cuts spending 10% when portfolio lags, raises 10% when it grows.\n\n<b>VPW</b> — a rising % recalculated each year to spend down to exactly $0 at your target age.' },
-      zh: { title: '提領策略說明', body: '<b>固定年金</b> — 每年提領相同金額（調整通膨）。穩定可預測，但報酬不如預期時可能提早耗盡。\n\n<b>護欄策略</b> — 以設定提領率為基準，投資組合落後時削減 10%，成長時提高 10%，動態適應市場。\n\n<b>變動提領 (VPW)</b> — 每年依剩餘年數重新計算提領比例，目標在設定年齡時精確花光資產。' }
+      en: { title: 'Withdrawal Strategies', body: '<b>Fixed</b> — same inflation-adjusted amount every year. Predictable; portfolio may deplete early if returns disappoint.\n\n<b>Guardrails</b> — starts at your target rate; cuts spending 10% when portfolio lags, raises 10% when it grows.\n\n<b>VPW</b> — each year, multiply the current portfolio by a rate that answers: "given r% returns and n years left, what fraction spent today lands the portfolio at exactly $0 by the target age?" The rate rises as years shrink. Recalculated on the <i>actual</i> balance each year — good years raise spending, bad years lower it.' },
+      zh: { title: '提領策略說明', body: '<b>固定年金</b> — 每年提領相同金額（調整通膨）。穩定可預測，但報酬不如預期時可能提早耗盡。\n\n<b>護欄策略</b> — 以設定提領率為基準，投資組合落後時削減 10%，成長時提高 10%，動態適應市場。\n\n<b>變動提領 (VPW)</b> — 每年把當年資產乘以一個比例提領，這個比例回答的是：「以 r% 報酬率、還剩 n 年，今年提幾成才能剛好在目標年齡花光？」剩餘年數越少，比例越高。每年根據<i>當年實際資產</i>重新計算——好年份自動提高，壞年份自動降低。' }
     },
     mc: {
       en: { title: 'Monte Carlo Simulation', body: 'Runs 500 independent simulations live in your browser — no server, recalculated on every input change.\n\nEach run draws random annual returns from a lognormal distribution (your CAGR and sigma). Returns are independent year-to-year.\n\nThe fan shows the 5th / 25th / 50th / 75th / 95th percentile portfolio balance across all 500 paths.' },
@@ -640,7 +652,9 @@
     $('label-lower').textContent     = t('labelLower');
 
     $('chart-decu-title').textContent  = t('chartDecu');
-    $('chart-real-note').textContent   = t('chartRealNote');
+    $('chart-real-note').textContent   = chartMode === 'real' ? t('chartRealNote') : t('chartNominalNote');
+    $('btn-mode-real').textContent     = t('chartModeReal');
+    $('btn-mode-nominal').textContent  = t('chartModeNominal');
 
     $('timing-note').textContent         = t('timingNote');
     $('label-sigma').textContent         = t('labelSigma');
@@ -686,6 +700,7 @@
   const S = { pat: null, gistId: null, lang: 'en' };
   let saveTimer = null, MODE = 'fixed';
   let lastBaseRows = [], lastStressRows = [];
+let chartMode = 'real', lastMC = null, lastInp = null;
 
   function updateWithdrawSlider() {
     const savings = Math.max(0, +$('i-savings').value || 0);
@@ -840,7 +855,7 @@
       upper:     Math.max(1,    +$('i-upper').value    || 20),
       lower:     Math.max(1,    +$('i-lower').value    || 20),
       deathAge:  Math.max(50,   +$('i-death').value    || 85),
-      sigma:     Math.max(0.01, +$('i-sigma').value    || 15) / 100,
+      sigma:     Math.max(0,    +$('i-sigma').value    || 0)  / 100,
     };
   }
 
@@ -984,12 +999,6 @@
   function calcFixed(inp) {
     const horizon = Math.max(1, Math.round(inp.deathAge - inp.age));
     const pmt = Math.max(0, +$('i-withdraw').value || 0);
-    if (pmt <= 0) {
-      $('results-content').innerHTML = `<div class="banner warning">${t('bannerEmpty')}</div>`;
-      $('success-rate-wrap').classList.add('hidden');
-      $('decu-chart-wrap').classList.add('hidden');
-      return false;
-    }
     lastBaseRows = simulateFixed(inp.savings, pmt, inp.ret, horizon, inp.age);
     renderFixedResults(inp, pmt, horizon);
     renderFixedSummary(inp, lastBaseRows);
@@ -1088,9 +1097,21 @@
     $('success-rate-wrap').classList.remove('hidden');
   }
 
+  function setChartMode(mode) {
+    chartMode = mode;
+    $('btn-mode-real').classList.toggle('active', mode === 'real');
+    $('btn-mode-nominal').classList.toggle('active', mode === 'nominal');
+    $('chart-real-note').textContent = mode === 'real' ? t('chartRealNote') : t('chartNominalNote');
+    if (lastMC && lastInp) drawUnifiedChart(lastMC, lastInp);
+  }
+
   function drawUnifiedChart(mc, inp) {
+    lastMC = mc; lastInp = inp;
     const { portPercentiles, wdPercentiles, horizon } = mc;
-    const maxPort = Math.max(inp.savings * 1.05, ...portPercentiles.map(p => p[4]), 1);
+    const scale = y => chartMode === 'nominal' ? Math.pow(1 + inp.inflation, y) : 1;
+    const scaledPort = portPercentiles.map((p, y) => p.map(v => v * scale(y)));
+    const scaledWd   = wdPercentiles.map((p, y) => p.map(v => v * scale(y)));
+    const maxPort = Math.max(inp.savings * 1.05, ...scaledPort.map(p => p[4]), 1);
     const xS = v => DPL + (v / horizon) * DIW;
     const yS = v => DPT + DIH - (Math.max(0, v) / maxPort) * DIH;
 
@@ -1104,11 +1125,11 @@
     for (let yr = 0; yr <= horizon; yr += step)
       xl += `<text x="${xS(yr)}" y="${DPT+DIH+18}" text-anchor="middle" fill="#888" font-size="10">${t('chartYrPfx')} ${yr}</text>`;
 
-    const years = Array.from({length: portPercentiles.length}, (_, i) => i);
+    const years = Array.from({length: scaledPort.length}, (_, i) => i);
     const band = (hi, lo) =>
-      years.map(y => `${xS(y)},${yS(portPercentiles[y][hi])}`).join(' ') + ' ' +
-      [...years].reverse().map(y => `${xS(y)},${yS(portPercentiles[y][lo])}`).join(' ');
-    const med = years.map(y => `${xS(y)},${yS(portPercentiles[y][2])}`).join(' ');
+      years.map(y => `${xS(y)},${yS(scaledPort[y][hi])}`).join(' ') + ' ' +
+      [...years].reverse().map(y => `${xS(y)},${yS(scaledPort[y][lo])}`).join(' ');
+    const med = years.map(y => `${xS(y)},${yS(scaledPort[y][2])}`).join(' ');
 
     $('decu-svg').innerHTML =
       `<clipPath id="dc"><rect x="${DPL}" y="${DPT}" width="${DIW}" height="${DIH}"/></clipPath>` +
@@ -1131,7 +1152,7 @@
     svg.appendChild(ov);
 
     const isVariable = MODE !== 'fixed';
-    const pmt = MODE === 'fixed' ? Math.max(0, +$('i-withdraw').value || 0) : 0;
+    const pmtReal = MODE === 'fixed' ? Math.max(0, +$('i-withdraw').value || 0) : 0;
     const ff = '-apple-system,sans-serif';
 
     ov.addEventListener('mousemove', e => {
@@ -1140,8 +1161,9 @@
       const yr = Math.max(0, Math.min(horizon, Math.round((mx - DPL) / DIW * horizon)));
       const cx = xS(yr);
       const age = inp.age + yr;
-      const pp = portPercentiles[yr] || [0,0,0,0,0];
-      const wp = wdPercentiles ? (wdPercentiles[yr] || [0,0,0,0,0]) : null;
+      const pp = scaledPort[yr] || [0,0,0,0,0];
+      const wp = scaledWd ? (scaledWd[yr] || [0,0,0,0,0]) : null;
+      const pmt = pmtReal * scale(yr);
       const yrTxt = S.lang === 'zh' ? `${t('chartYrPfx')} ${yr} 年 · 年齡 ${age}` : `yr ${yr}  ·  age ${age}`;
 
       let h = `<line x1="${cx}" y1="${DPT}" x2="${cx}" y2="${DPT+DIH}" stroke="#333" stroke-width="1"/>`;
